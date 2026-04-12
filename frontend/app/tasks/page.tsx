@@ -50,7 +50,7 @@ export default function TasksPage() {
       <div className="max-w-5xl mx-auto p-4 md:p-6 -mt-4 space-y-2.5">
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
-            <div className="w-7 h-7 border-2 border-brand-200 border-t-brand-500 rounded-full animate-spin" />
+            <div className="w-7 h-7 border-2 border-indigo-200 border-t-indigo-500 rounded-full animate-spin" />
           </div>
         ) : tasks?.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16">

@@ -30,12 +30,9 @@ export function BottomNav() {
               className={`
                 flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 rounded-2xl
                 transition-all duration-200 text-xs font-medium
-                ${
-                  active
-                    ? "bg-brand-50 text-brand-600 shadow-pill"
-                    : "text-gray-400 hover:text-gray-600"
-                }
+                ${active ? "text-gray-400 hover:text-gray-600" : "text-gray-400 hover:text-gray-600"}
               `}
+              style={active ? { backgroundColor: "#eef2ff", color: "#6366f1" } : undefined}
             >
               <span className="text-lg leading-none">{tab.icon}</span>
               <span>{tab.label}</span>

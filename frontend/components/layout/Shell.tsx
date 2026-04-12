@@ -1,12 +1,30 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BottomNav } from "./BottomNav";
 import { useTasks } from "@/lib/queries/tasks";
 import { useIssues } from "@/lib/queries/issues";
 import { useSuppliers } from "@/lib/queries/suppliers";
+
+const SIDEBAR_WIDE = 240;
+const SIDEBAR_NARROW = 68;
+
+// Colors
+const C = {
+  bg: "#0f172a",         // deep navy
+  bgLight: "#1e293b",    // slightly lighter navy
+  accent: "#6366f1",     // indigo accent
+  accentGlow: "rgba(99,102,241,0.25)",
+  accentBg: "rgba(99,102,241,0.08)",
+  accentBadge: "rgba(99,102,241,0.15)",
+  textMuted: "rgba(255,255,255,0.4)",
+  textDefault: "rgba(255,255,255,0.55)",
+  textHover: "rgba(255,255,255,0.75)",
+  textActive: "#ffffff",
+  border: "rgba(255,255,255,0.06)",
+};
 
 const mainNav = [
   {
@@ -61,7 +79,7 @@ const managementNav = [
   },
 ];
 
-function Sidebar() {
+function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const pathname = usePathname();
   const { data: tasks } = useTasks();
   const { data: issues } = useIssues();
@@ -94,42 +112,43 @@ function Sidebar() {
     return (
       <Link
         href={href}
-        className="nav-item-corporate"
+        title={collapsed ? label : undefined}
         style={{
           display: "flex",
           alignItems: "center",
-          gap: 10,
-          padding: "9px 20px",
+          gap: collapsed ? 0 : 10,
+          justifyContent: collapsed ? "center" : undefined,
+          padding: collapsed ? "10px 0" : "9px 20px",
           position: "relative",
           transition: "all 0.2s",
-          color: active ? "#14a87a" : "rgba(255,255,255,0.45)",
+          color: active ? C.textActive : C.textDefault,
           fontSize: 13,
           fontWeight: active ? 500 : 400,
-          backgroundColor: active ? "rgba(20,168,122,0.06)" : undefined,
+          backgroundColor: active ? C.accentBg : undefined,
           textDecoration: "none",
-          borderRight: active ? "3px solid #14a87a" : "3px solid transparent",
+          borderRight: active ? `3px solid ${C.accent}` : "3px solid transparent",
         }}
         onMouseEnter={(e) => {
           if (!active) {
-            e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.03)";
-            e.currentTarget.style.color = "rgba(255,255,255,0.6)";
+            e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.04)";
+            e.currentTarget.style.color = C.textHover;
           }
         }}
         onMouseLeave={(e) => {
           if (!active) {
             e.currentTarget.style.backgroundColor = "";
-            e.currentTarget.style.color = "rgba(255,255,255,0.45)";
+            e.currentTarget.style.color = C.textDefault;
           }
         }}
       >
-        <span style={{ flexShrink: 0, display: "flex" }}>{icon}</span>
-        <span>{label}</span>
-        {count != null && count > 0 && (
+        <span style={{ flexShrink: 0, display: "flex", color: active ? C.accent : "inherit" }}>{icon}</span>
+        {!collapsed && <span>{label}</span>}
+        {!collapsed && count != null && count > 0 && (
           <span
             style={{
               marginRight: "auto",
-              background: "rgba(20,168,122,0.15)",
-              color: "#14a87a",
+              background: C.accentBadge,
+              color: C.accent,
               fontSize: 10,
               fontWeight: 600,
               padding: "1px 7px",
@@ -143,67 +162,121 @@ function Sidebar() {
     );
   }
 
+  const width = collapsed ? SIDEBAR_NARROW : SIDEBAR_WIDE;
+
   return (
     <aside
-      className="hidden md:flex flex-col w-60 fixed top-0 bottom-0 right-0 z-40"
+      className="hidden md:flex flex-col fixed top-0 bottom-0 right-0 z-40"
       style={{
-        background: "linear-gradient(180deg, #1a1d23 0%, #111318 100%)",
-        boxShadow: "0 0 30px rgba(0,0,0,0.3)",
+        width,
+        background: C.bg,
+        boxShadow: "-4px 0 24px rgba(0,0,0,0.2)",
+        transition: "width 0.25s cubic-bezier(0.4,0,0.2,1)",
+        overflow: "hidden",
       }}
     >
       {/* Brand */}
-      <div style={{ padding: "24px 20px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+      <div style={{
+        padding: collapsed ? "24px 0 20px" : "24px 20px 20px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: collapsed ? "center" : undefined,
+        gap: collapsed ? 0 : 12,
+        borderBottom: `1px solid ${C.border}`,
+        transition: "padding 0.25s",
+      }}>
         <div
           style={{
             width: 36, height: 36, borderRadius: 10,
-            background: "linear-gradient(135deg, #14a87a, #0d8c63)",
+            background: `linear-gradient(135deg, ${C.accent}, #4f46e5)`,
             display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 0 20px rgba(20,168,122,0.3)",
+            boxShadow: `0 0 20px ${C.accentGlow}`,
             flexShrink: 0,
           }}
         >
           <span className="text-white font-heading text-sm">א</span>
         </div>
-        <div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", lineHeight: 1.2 }} className="font-heading">אבישג</div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>ניהול רכש</div>
-        </div>
+        {!collapsed && (
+          <div style={{ overflow: "hidden", whiteSpace: "nowrap" }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", lineHeight: 1.2 }} className="font-heading">אבישג</div>
+            <div style={{ fontSize: 11, color: C.textMuted }}>ניהול רכש</div>
+          </div>
+        )}
       </div>
 
       {/* Navigation */}
-      <nav style={{ flex: 1, padding: "12px 0", display: "flex", flexDirection: "column", gap: 2 }}>
-        {/* Section: Main Navigation */}
-        <div style={{
-          fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.25)",
-          padding: "12px 20px 6px", letterSpacing: 1,
-        }}>
-          ניווט ראשי
-        </div>
+      <nav style={{ flex: 1, padding: "12px 0", display: "flex", flexDirection: "column", gap: 2, overflowY: "auto", overflowX: "hidden" }}>
+        {!collapsed && (
+          <div style={{
+            fontSize: 10, fontWeight: 600, color: C.textMuted,
+            padding: "12px 20px 6px", letterSpacing: 1,
+          }}>
+            ניווט ראשי
+          </div>
+        )}
         {mainNav.map((item) => (
           <NavItem key={item.href} {...item} />
         ))}
 
         {/* Divider */}
-        <div style={{ height: 1, background: "rgba(255,255,255,0.05)", margin: "8px 20px" }} />
+        <div style={{ height: 1, background: C.border, margin: collapsed ? "8px 12px" : "8px 20px" }} />
 
-        {/* Section: Management */}
-        <div style={{
-          fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.25)",
-          padding: "12px 20px 6px", letterSpacing: 1,
-        }}>
-          ניהול
-        </div>
+        {!collapsed && (
+          <div style={{
+            fontSize: 10, fontWeight: 600, color: C.textMuted,
+            padding: "12px 20px 6px", letterSpacing: 1,
+          }}>
+            ניהול
+          </div>
+        )}
         {managementNav.map((item) => (
           <NavItem key={item.href} {...item} />
         ))}
       </nav>
 
+      {/* Toggle button */}
+      <button
+        onClick={onToggle}
+        title={collapsed ? "הרחב תפריט" : "כווץ תפריט"}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "12px 0",
+          borderTop: `1px solid ${C.border}`,
+          color: C.textDefault,
+          background: "transparent",
+          border: "none",
+          borderTopStyle: "solid",
+          borderTopWidth: 1,
+          borderTopColor: C.border,
+          cursor: "pointer",
+          transition: "color 0.2s",
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.color = C.textHover; }}
+        onMouseLeave={(e) => { e.currentTarget.style.color = C.textDefault; }}
+      >
+        <svg
+          width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+          style={{ transform: collapsed ? "scaleX(-1)" : undefined, transition: "transform 0.25s" }}
+        >
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </button>
+
       {/* User profile */}
-      <div style={{ padding: "16px 20px", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", gap: 10 }}>
+      <div style={{
+        padding: collapsed ? "16px 0" : "16px 20px",
+        borderTop: `1px solid ${C.border}`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: collapsed ? "center" : undefined,
+        gap: collapsed ? 0 : 10,
+      }}>
         <div
           style={{
             width: 34, height: 34, borderRadius: "50%",
-            background: "linear-gradient(135deg, #14a87a, #0d8c63)",
+            background: `linear-gradient(135deg, ${C.accent}, #4f46e5)`,
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 13, fontWeight: 600, color: "#fff",
             flexShrink: 0,
@@ -211,21 +284,40 @@ function Sidebar() {
         >
           א
         </div>
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 600, color: "#fff", lineHeight: 1.2 }}>אבישג</div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>מנהלת רכש</div>
-        </div>
+        {!collapsed && (
+          <div style={{ overflow: "hidden", whiteSpace: "nowrap" }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#fff", lineHeight: 1.2 }}>אבישג</div>
+            <div style={{ fontSize: 11, color: C.textMuted }}>מנהלת רכש</div>
+          </div>
+        )}
       </div>
     </aside>
   );
 }
 
 export function Shell({ children }: { children: ReactNode }) {
+  const [collapsed, setCollapsed] = useState(false);
+  const sidebarWidth = collapsed ? SIDEBAR_NARROW : SIDEBAR_WIDE;
+
   return (
     <div className="min-h-screen bg-base">
-      <Sidebar />
-      <main className="md:mr-60 pb-20 md:pb-6">
-        {children}
+      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
+      <main
+        className="pb-20 md:pb-6"
+        style={{
+          marginRight: undefined,
+          transition: "margin-right 0.25s cubic-bezier(0.4,0,0.2,1)",
+        }}
+      >
+        {/* CSS media query for margin — inline style can't do md: breakpoint, so use a className trick */}
+        <style>{`
+          @media (min-width: 768px) {
+            .shell-main { margin-right: ${sidebarWidth}px !important; }
+          }
+        `}</style>
+        <div className="shell-main">
+          {children}
+        </div>
       </main>
       <BottomNav />
     </div>

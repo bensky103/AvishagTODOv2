@@ -52,7 +52,7 @@ export default function DashboardPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-brand-200 border-t-brand-500 rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-indigo-200 border-t-indigo-500 rounded-full animate-spin" />
           <p className="text-text-secondary font-body text-sm">טוען נתונים...</p>
         </div>
       </div>
@@ -62,7 +62,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen">
       {/* Hero header — visible on mobile, compact on desktop since sidebar has branding */}
-      <div className="relative overflow-hidden bg-gradient-to-bl from-brand-600 via-brand-500 to-brand-700 px-5 pt-8 pb-12 md:pt-8 md:pb-10 text-white">
+      <div className="relative overflow-hidden px-5 pt-8 pb-12 md:pt-8 md:pb-10 text-white" style={{ background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #4338ca 100%)" }}>
         <div className="relative z-10 max-w-5xl mx-auto">
           <h1 className="text-2xl md:text-3xl font-heading leading-tight">
             שלום, אבישג
@@ -180,7 +180,7 @@ export default function DashboardPage() {
                 <h2 className="text-sm font-heading text-gray-900">תקלות אחרונות</h2>
               </div>
               {recentIssues.length > 0 && (
-                <Link href="/issues" className="text-xs font-body text-brand-600 hover:text-brand-700 font-medium">
+                <Link href="/issues" className="text-xs font-body text-indigo-600 hover:text-indigo-700 font-medium">
                   הצג הכל
                 </Link>
               )}

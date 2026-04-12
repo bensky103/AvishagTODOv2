@@ -9,53 +9,32 @@ interface KpiCardProps {
   icon?: ReactNode;
 }
 
-const variantStyles: Record<string, { bg: string; value: string; label: string; icon: string }> = {
-  default: {
-    bg: "#f1f5f9",
-    value: "#1e293b",
-    label: "#64748b",
-    icon: "#475569",
-  },
-  danger: {
-    bg: "#fee2e2",
-    value: "#dc2626",
-    label: "#b91c1c",
-    icon: "#ef4444",
-  },
-  success: {
-    bg: "#d1fae5",
-    value: "#059669",
-    label: "#047857",
-    icon: "#10b981",
-  },
-  warning: {
-    bg: "#fef3c7",
-    value: "#d97706",
-    label: "#b45309",
-    icon: "#f59e0b",
-  },
+const variantAccent: Record<string, string> = {
+  default: "#6366f1",
+  danger: "#ef4444",
+  success: "#10b981",
+  warning: "#f59e0b",
 };
 
 export function KpiCard({ value, label, variant = "default", href, icon }: KpiCardProps) {
-  const styles = variantStyles[variant];
+  const accent = variantAccent[variant];
 
   const content = (
     <div
-      className="rounded-2xl p-5 transition-all duration-200 hover:scale-[1.02] group"
-      style={{ backgroundColor: styles.bg }}
+      className="bg-white rounded-xl shadow-card hover:shadow-card-hover transition-all duration-200 p-5 flex items-center gap-4"
+      style={{ borderRight: `4px solid ${accent}` }}
     >
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-3xl font-bold font-heading" style={{ color: styles.value }}>
-            {value}
-          </p>
-          <p className="text-xs font-body mt-1.5 font-medium" style={{ color: styles.label }}>
-            {label}
-          </p>
+      {icon && (
+        <div
+          className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ backgroundColor: `${accent}12`, color: accent }}
+        >
+          {icon}
         </div>
-        {icon && (
-          <span style={{ color: styles.icon, opacity: 0.6 }}>{icon}</span>
-        )}
+      )}
+      <div className="min-w-0">
+        <p className="text-2xl font-bold font-heading text-gray-900">{value}</p>
+        <p className="text-xs font-body text-gray-500 mt-0.5 font-medium">{label}</p>
       </div>
     </div>
   );

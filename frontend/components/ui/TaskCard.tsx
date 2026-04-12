@@ -6,7 +6,7 @@ import { Badge } from "./Badge";
 const urgencyBorderColors: Record<string, string> = {
   critical: "border-r-red-400",
   high: "border-r-amber-400",
-  medium: "border-r-brand-400",
+  medium: "border-r-indigo-400",
   low: "border-r-gray-200",
 };
 
@@ -53,8 +53,8 @@ export function TaskCard({ task, onClick, onToggle }: TaskCardProps) {
           transition-all duration-150
           ${
             task.is_completed
-              ? "bg-brand-500 border-brand-500"
-              : "border-gray-300 hover:border-brand-400"
+              ? "bg-indigo-500 border-indigo-500"
+              : "border-gray-300 hover:border-indigo-400"
           }
         `}
       >

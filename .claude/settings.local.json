@@ -12,7 +12,9 @@
       "Bash(python:*)",
       "Bash(python3 -c ':*)",
       "Bash(start:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "mcp__plugin_playwright_playwright__browser_tabs",
+      "mcp__plugin_playwright_playwright__browser_close"
     ]
   }
 }

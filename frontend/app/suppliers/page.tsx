@@ -48,14 +48,14 @@ export default function SuppliersPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="חיפוש ספק..."
-            className="w-full bg-white rounded-xl shadow-card pr-11 pl-4 py-3 text-sm font-body text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 border border-gray-100 transition-shadow"
+            className="w-full bg-white rounded-xl shadow-card pr-11 pl-4 py-3 text-sm font-body text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 border border-gray-100 transition-shadow"
           />
         </div>
 
         {/* Supplier List */}
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
-            <div className="w-7 h-7 border-2 border-brand-200 border-t-brand-500 rounded-full animate-spin" />
+            <div className="w-7 h-7 border-2 border-indigo-200 border-t-indigo-500 rounded-full animate-spin" />
           </div>
         ) : filtered?.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16">
@@ -78,8 +78,8 @@ export default function SuppliersPage() {
                   className="w-full bg-white rounded-xl border border-gray-100 shadow-card p-4 flex items-center justify-between hover:shadow-card-hover transition-all duration-200 text-right group"
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-100 transition-colors">
-                      <span className="text-brand-600 font-heading text-sm">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-100 transition-colors">
+                      <span className="text-indigo-600 font-heading text-sm">
                         {supplier.name.charAt(0)}
                       </span>
                     </div>
