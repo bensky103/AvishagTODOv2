@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  avishag:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - avishag_data:/data
+    env_file:
+      - .env
+    restart: unless-stopped
+
+volumes:
+  avishag_data:

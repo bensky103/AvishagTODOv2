@@ -1,0 +1,15 @@
+.git
+.gitignore
+.env
+*.md
+docs/
+.superpowers/
+node_modules/
+__pycache__/
+*.pyc
+.next/
+frontend/out/
+backend/data/
+*.db
+.claude/
+AvishagBot/
