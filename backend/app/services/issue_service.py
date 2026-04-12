@@ -44,13 +44,15 @@ async def list_issue_reports(
     session: AsyncSession,
     supplier_id: Optional[int] = None,
     status: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 100,
 ) -> list[IssueReport]:
     stmt = select(IssueReport).options(selectinload(IssueReport.action_items))
     if supplier_id:
         stmt = stmt.where(IssueReport.supplier_id == supplier_id)
     if status:
         stmt = stmt.where(IssueReport.status == status)
-    stmt = stmt.order_by(IssueReport.created_at.desc())
+    stmt = stmt.order_by(IssueReport.created_at.desc()).offset(skip).limit(limit)
     result = await session.execute(stmt)
     return list(result.scalars().all())
 

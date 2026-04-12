@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
@@ -24,9 +24,13 @@ async def list_tasks(
     status: Optional[str] = None,
     urgency: Optional[str] = None,
     due_before: Optional[date] = None,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
     session: AsyncSession = Depends(get_session),
 ):
-    return await task_service.list_tasks(session, status=status, urgency=urgency, due_before=due_before)
+    return await task_service.list_tasks(
+        session, status=status, urgency=urgency, due_before=due_before, skip=skip, limit=limit,
+    )
 
 
 @router.get("/{task_id}", response_model=TaskResponse)

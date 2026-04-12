@@ -23,8 +23,9 @@ async def get_supplier(session: AsyncSession, supplier_id: int) -> Optional[Supp
     return await session.get(Supplier, supplier_id)
 
 
-async def list_suppliers(session: AsyncSession) -> list[Supplier]:
-    result = await session.execute(select(Supplier).order_by(Supplier.name))
+async def list_suppliers(session: AsyncSession, skip: int = 0, limit: int = 100) -> list[Supplier]:
+    stmt = select(Supplier).order_by(Supplier.name).offset(skip).limit(limit)
+    result = await session.execute(stmt)
     return list(result.scalars().all())
 
 

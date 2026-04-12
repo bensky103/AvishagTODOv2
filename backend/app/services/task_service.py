@@ -35,6 +35,8 @@ async def list_tasks(
     status: Optional[str] = None,
     urgency: Optional[str] = None,
     due_before: Optional[date] = None,
+    skip: int = 0,
+    limit: int = 100,
 ) -> list[Task]:
     stmt = select(Task)
     if status == "open":
@@ -45,7 +47,7 @@ async def list_tasks(
         stmt = stmt.where(Task.urgency == urgency)
     if due_before:
         stmt = stmt.where(Task.due_date <= due_before)
-    stmt = stmt.order_by(Task.created_at.desc())
+    stmt = stmt.order_by(Task.created_at.desc()).offset(skip).limit(limit)
     result = await session.execute(stmt)
     return list(result.scalars().all())
 

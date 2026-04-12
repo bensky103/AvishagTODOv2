@@ -1,11 +1,8 @@
-import os
 from contextlib import asynccontextmanager
-from pathlib import Path
 
 import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 
 from app.api import tasks, suppliers, issues
 from app.config import settings
@@ -28,7 +25,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Avishag Purchase Manager", lifespan=lifespan)
 
-# CORS — allow all origins for dev
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -37,7 +33,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# API routes
 app.include_router(tasks.router, prefix="/api/tasks", tags=["tasks"])
 app.include_router(suppliers.router, prefix="/api/suppliers", tags=["suppliers"])
 app.include_router(issues.router, prefix="/api/issues", tags=["issues"])
@@ -46,9 +41,3 @@ app.include_router(issues.router, prefix="/api/issues", tags=["issues"])
 @app.get("/health")
 async def health():
     return {"status": "ok"}
-
-
-# Mount Next.js static export — must be AFTER API routes
-frontend_dir = Path(__file__).resolve().parent.parent.parent / "frontend" / "out"
-if frontend_dir.is_dir():
-    app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")

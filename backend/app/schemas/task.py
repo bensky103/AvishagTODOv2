@@ -1,21 +1,21 @@
 from datetime import date, datetime
-from typing import Optional
+from typing import Literal, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class TaskCreate(BaseModel):
-    title: str
-    description: Optional[str] = None
+    title: str = Field(..., min_length=1, max_length=500)
+    description: Optional[str] = Field(None, max_length=5000)
     due_date: Optional[date] = None
-    urgency: str = "medium"
+    urgency: Literal["low", "medium", "high", "critical"] = "medium"
 
 
 class TaskUpdate(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
+    title: Optional[str] = Field(None, min_length=1, max_length=500)
+    description: Optional[str] = Field(None, max_length=5000)
     due_date: Optional[date] = None
-    urgency: Optional[str] = None
+    urgency: Optional[Literal["low", "medium", "high", "critical"]] = None
 
 
 class TaskResponse(BaseModel):

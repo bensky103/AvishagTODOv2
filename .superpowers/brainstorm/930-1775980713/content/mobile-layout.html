@@ -1,0 +1,299 @@
+<h2>Mobile Layout — 4 Main Screens</h2>
+<p class="subtitle">Clean Light theme, bottom tab bar, Hebrew RTL. Here's what each screen looks like.</p>
+
+<div class="split" style="flex-wrap: wrap; gap: 24px;">
+
+  <!-- Dashboard -->
+  <div class="mockup" style="flex: 1; min-width: 280px; max-width: 340px;">
+    <div class="mockup-header">Dashboard (דשבורד)</div>
+    <div class="mockup-body" style="padding: 0;">
+      <div style="background:#fff; font-family:system-ui; direction:rtl; min-height:520px; display:flex; flex-direction:column;">
+        <!-- Status bar -->
+        <div style="padding:16px 20px 8px; background:#fff;">
+          <div style="font-size:22px; font-weight:700; color:#111827;">שלום, אבישג 👋</div>
+          <div style="font-size:13px; color:#6b7280; margin-top:2px;">יום ראשון, 12 באפריל</div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div style="padding:12px 16px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div style="background:#f9fafb; border-radius:12px; padding:14px; border:1px solid #f3f4f6;">
+            <div style="font-size:28px; font-weight:700; color:#111827;">7</div>
+            <div style="font-size:12px; color:#6b7280;">משימות פתוחות</div>
+          </div>
+          <div style="background:#fef2f2; border-radius:12px; padding:14px; border:1px solid #fecaca;">
+            <div style="font-size:28px; font-weight:700; color:#dc2626;">2</div>
+            <div style="font-size:12px; color:#dc2626;">באיחור</div>
+          </div>
+          <div style="background:#f9fafb; border-radius:12px; padding:14px; border:1px solid #f3f4f6;">
+            <div style="font-size:28px; font-weight:700; color:#111827;">3</div>
+            <div style="font-size:12px; color:#6b7280;">תקלות פתוחות</div>
+          </div>
+          <div style="background:#f9fafb; border-radius:12px; padding:14px; border:1px solid #f3f4f6;">
+            <div style="font-size:28px; font-weight:700; color:#111827;">12</div>
+            <div style="font-size:12px; color:#6b7280;">ספקים</div>
+          </div>
+        </div>
+
+        <!-- Needs Attention -->
+        <div style="padding:4px 20px 8px;">
+          <div style="font-size:15px; font-weight:700; color:#111827; margin-bottom:8px;">⚠️ דורש טיפול</div>
+          <div style="background:#fff; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden;">
+            <div style="padding:12px 14px; border-bottom:1px solid #f3f4f6; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="font-size:13px; font-weight:600; color:#111827;">הזמנת חומרי אריזה</div>
+                <div style="font-size:11px; color:#dc2626;">באיחור · אתמול</div>
+              </div>
+              <span style="background:#fef2f2; color:#dc2626; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600;">קריטי</span>
+            </div>
+            <div style="padding:12px 14px; border-bottom:1px solid #f3f4f6; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="font-size:13px; font-weight:600; color:#111827;">בדיקת מחירים מול ספק</div>
+                <div style="font-size:11px; color:#f59e0b;">מחר</div>
+              </div>
+              <span style="background:#fffbeb; color:#d97706; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600;">גבוה</span>
+            </div>
+            <div style="padding:12px 14px; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="font-size:13px; font-weight:600; color:#111827;">עדכון רשימת ספקים</div>
+                <div style="font-size:11px; color:#6b7280;">15/04</div>
+              </div>
+              <span style="background:#f3f4f6; color:#6b7280; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600;">בינוני</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Spacer -->
+        <div style="flex:1;"></div>
+
+        <!-- Bottom Tab Bar -->
+        <div style="display:flex; border-top:1px solid #e5e7eb; background:#fff; padding:8px 0 12px;">
+          <div style="flex:1; text-align:center;">
+            <div style="font-size:20px;">📊</div>
+            <div style="font-size:10px; color:#111827; font-weight:600;">דשבורד</div>
+          </div>
+          <div style="flex:1; text-align:center;">
+            <div style="font-size:20px;">✅</div>
+            <div style="font-size:10px; color:#9ca3af;">משימות</div>
+          </div>
+          <div style="flex:1; text-align:center;">
+            <div style="font-size:20px;">🏢</div>
+            <div style="font-size:10px; color:#9ca3af;">ספקים</div>
+          </div>
+          <div style="flex:1; text-align:center;">
+            <div style="font-size:20px;">⚠️</div>
+            <div style="font-size:10px; color:#9ca3af;">תקלות</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tasks -->
+  <div class="mockup" style="flex: 1; min-width: 280px; max-width: 340px;">
+    <div class="mockup-header">Tasks (משימות)</div>
+    <div class="mockup-body" style="padding: 0;">
+      <div style="background:#fff; font-family:system-ui; direction:rtl; min-height:520px; display:flex; flex-direction:column;">
+        <!-- Header -->
+        <div style="padding:16px 20px 12px; display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:22px; font-weight:700; color:#111827;">משימות</div>
+          <div style="background:#111827; color:white; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px;">+</div>
+        </div>
+
+        <!-- Filter chips -->
+        <div style="padding:0 16px 12px; display:flex; gap:8px; direction:rtl;">
+          <span style="background:#111827; color:white; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600;">הכל</span>
+          <span style="background:#f3f4f6; color:#6b7280; padding:6px 14px; border-radius:20px; font-size:12px;">פתוחות</span>
+          <span style="background:#f3f4f6; color:#6b7280; padding:6px 14px; border-radius:20px; font-size:12px;">הושלמו</span>
+        </div>
+
+        <!-- Task list -->
+        <div style="padding:0 16px; flex:1;">
+          <div style="background:#fff; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden;">
+            <div style="padding:14px; border-bottom:1px solid #f3f4f6; display:flex; gap:12px; align-items:flex-start;">
+              <div style="width:22px; height:22px; border:2px solid #d1d5db; border-radius:6px; flex-shrink:0; margin-top:1px;"></div>
+              <div style="flex:1;">
+                <div style="font-size:14px; font-weight:600; color:#111827;">הזמנת חומרי אריזה</div>
+                <div style="font-size:12px; color:#dc2626; margin-top:2px;">באיחור · אתמול</div>
+              </div>
+              <span style="background:#fef2f2; color:#dc2626; padding:2px 8px; border-radius:12px; font-size:10px; font-weight:600; flex-shrink:0;">קריטי</span>
+            </div>
+            <div style="padding:14px; border-bottom:1px solid #f3f4f6; display:flex; gap:12px; align-items:flex-start;">
+              <div style="width:22px; height:22px; border:2px solid #d1d5db; border-radius:6px; flex-shrink:0; margin-top:1px;"></div>
+              <div style="flex:1;">
+                <div style="font-size:14px; font-weight:600; color:#111827;">בדיקת מחירים מול ספק</div>
+                <div style="font-size:12px; color:#f59e0b; margin-top:2px;">מחר</div>
+              </div>
+              <span style="background:#fffbeb; color:#d97706; padding:2px 8px; border-radius:12px; font-size:10px; font-weight:600; flex-shrink:0;">גבוה</span>
+            </div>
+            <div style="padding:14px; border-bottom:1px solid #f3f4f6; display:flex; gap:12px; align-items:flex-start;">
+              <div style="width:22px; height:22px; border:2px solid #d1d5db; border-radius:6px; flex-shrink:0; margin-top:1px;"></div>
+              <div style="flex:1;">
+                <div style="font-size:14px; font-weight:600; color:#111827;">עדכון רשימת ספקים</div>
+                <div style="font-size:12px; color:#6b7280; margin-top:2px;">15/04</div>
+              </div>
+              <span style="background:#f3f4f6; color:#6b7280; padding:2px 8px; border-radius:12px; font-size:10px; font-weight:600; flex-shrink:0;">בינוני</span>
+            </div>
+            <div style="padding:14px; display:flex; gap:12px; align-items:flex-start;">
+              <div style="width:22px; height:22px; background:#111827; border-radius:6px; flex-shrink:0; margin-top:1px; display:flex; align-items:center; justify-content:center;">
+                <span style="color:white; font-size:14px;">✓</span>
+              </div>
+              <div style="flex:1;">
+                <div style="font-size:14px; font-weight:600; color:#9ca3af; text-decoration:line-through;">השוואת הצעות מחיר</div>
+                <div style="font-size:12px; color:#9ca3af; margin-top:2px;">הושלם אתמול</div>
+              </div>
+              <span style="background:#f3f4f6; color:#9ca3af; padding:2px 8px; border-radius:12px; font-size:10px; font-weight:600; flex-shrink:0;">נמוך</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex:1;"></div>
+
+        <!-- Bottom Tab Bar -->
+        <div style="display:flex; border-top:1px solid #e5e7eb; background:#fff; padding:8px 0 12px;">
+          <div style="flex:1; text-align:center;">
+            <div style="font-size:20px;">📊</div>
+            <div style="font-size:10px; color:#9ca3af;">דשבורד</div>
+          </div>
+          <div style="flex:1; text-align:center;">
+            <div style="font-size:20px;">✅</div>
+            <div style="font-size:10px; color:#111827; font-weight:600;">משימות</div>
+          </div>
+          <div style="flex:1; text-align:center;">
+            <div style="font-size:20px;">🏢</div>
+            <div style="font-size:10px; color:#9ca3af;">ספקים</div>
+          </div>
+          <div style="flex:1; text-align:center;">
+            <div style="font-size:20px;">⚠️</div>
+            <div style="font-size:10px; color:#9ca3af;">תקלות</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Suppliers -->
+  <div class="mockup" style="flex: 1; min-width: 280px; max-width: 340px;">
+    <div class="mockup-header">Suppliers (ספקים)</div>
+    <div class="mockup-body" style="padding: 0;">
+      <div style="background:#fff; font-family:system-ui; direction:rtl; min-height:520px; display:flex; flex-direction:column;">
+        <div style="padding:16px 20px 12px; display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:22px; font-weight:700; color:#111827;">ספקים</div>
+          <div style="background:#111827; color:white; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px;">+</div>
+        </div>
+
+        <!-- Search -->
+        <div style="padding:0 16px 12px;">
+          <div style="background:#f3f4f6; border-radius:10px; padding:10px 14px; display:flex; align-items:center; gap:8px;">
+            <span style="color:#9ca3af;">🔍</span>
+            <span style="color:#9ca3af; font-size:13px;">חיפוש ספק...</span>
+          </div>
+        </div>
+
+        <div style="padding:0 16px; flex:1;">
+          <div style="background:#fff; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden;">
+            <div style="padding:14px; border-bottom:1px solid #f3f4f6; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="font-size:14px; font-weight:600; color:#111827;">עוף הגליל בע״מ</div>
+                <div style="font-size:12px; color:#6b7280; margin-top:2px;">📞 04-1234567</div>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="background:#fef2f2; color:#dc2626; padding:2px 8px; border-radius:12px; font-size:10px; font-weight:600;">2 תקלות</span>
+                <span style="color:#d1d5db;">‹</span>
+              </div>
+            </div>
+            <div style="padding:14px; border-bottom:1px solid #f3f4f6; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="font-size:14px; font-weight:600; color:#111827;">ירקות השרון</div>
+                <div style="font-size:12px; color:#6b7280; margin-top:2px;">📞 09-7654321</div>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="background:#fffbeb; color:#d97706; padding:2px 8px; border-radius:12px; font-size:10px; font-weight:600;">1 תקלה</span>
+                <span style="color:#d1d5db;">‹</span>
+              </div>
+            </div>
+            <div style="padding:14px; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="font-size:14px; font-weight:600; color:#111827;">אריזות המרכז</div>
+                <div style="font-size:12px; color:#6b7280; margin-top:2px;">📞 03-9876543</div>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="background:#f0fdf4; color:#16a34a; padding:2px 8px; border-radius:12px; font-size:10px; font-weight:600;">תקין</span>
+                <span style="color:#d1d5db;">‹</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex:1;"></div>
+
+        <div style="display:flex; border-top:1px solid #e5e7eb; background:#fff; padding:8px 0 12px;">
+          <div style="flex:1; text-align:center;"><div style="font-size:20px;">📊</div><div style="font-size:10px; color:#9ca3af;">דשבורד</div></div>
+          <div style="flex:1; text-align:center;"><div style="font-size:20px;">✅</div><div style="font-size:10px; color:#9ca3af;">משימות</div></div>
+          <div style="flex:1; text-align:center;"><div style="font-size:20px;">🏢</div><div style="font-size:10px; color:#111827; font-weight:600;">ספקים</div></div>
+          <div style="flex:1; text-align:center;"><div style="font-size:20px;">⚠️</div><div style="font-size:10px; color:#9ca3af;">תקלות</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Issues -->
+  <div class="mockup" style="flex: 1; min-width: 280px; max-width: 340px;">
+    <div class="mockup-header">Issues (תקלות)</div>
+    <div class="mockup-body" style="padding: 0;">
+      <div style="background:#fff; font-family:system-ui; direction:rtl; min-height:520px; display:flex; flex-direction:column;">
+        <div style="padding:16px 20px 12px; display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:22px; font-weight:700; color:#111827;">תקלות</div>
+          <div style="background:#111827; color:white; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px;">+</div>
+        </div>
+
+        <!-- Filter chips -->
+        <div style="padding:0 16px 12px; display:flex; gap:8px;">
+          <span style="background:#111827; color:white; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600;">פתוחות</span>
+          <span style="background:#f3f4f6; color:#6b7280; padding:6px 14px; border-radius:20px; font-size:12px;">בטיפול</span>
+          <span style="background:#f3f4f6; color:#6b7280; padding:6px 14px; border-radius:20px; font-size:12px;">נפתרו</span>
+        </div>
+
+        <div style="padding:0 16px; flex:1;">
+          <div style="background:#fff; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden;">
+            <div style="padding:14px; border-bottom:1px solid #f3f4f6;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                  <div style="font-size:14px; font-weight:600; color:#111827;">סחורה פגומה - חזה עוף</div>
+                  <div style="font-size:12px; color:#6b7280; margin-top:2px;">עוף הגליל · 10/04</div>
+                </div>
+                <span style="background:#fef2f2; color:#dc2626; padding:2px 8px; border-radius:12px; font-size:10px; font-weight:600;">פתוחה</span>
+              </div>
+              <div style="margin-top:8px; padding:8px 10px; background:#f9fafb; border-radius:6px; font-size:12px; color:#4b5563;">
+                סחורה הגיעה פגומה, 3 קרטונים לא תקינים. יש לדרוש החלפה.
+              </div>
+              <div style="margin-top:6px; font-size:11px; color:#6b7280;">📋 2 פעולות · 1 הושלמה</div>
+            </div>
+            <div style="padding:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                  <div style="font-size:14px; font-weight:600; color:#111827;">איחור באספקה</div>
+                  <div style="font-size:12px; color:#6b7280; margin-top:2px;">ירקות השרון · 08/04</div>
+                </div>
+                <span style="background:#fffbeb; color:#d97706; padding:2px 8px; border-radius:12px; font-size:10px; font-weight:600;">בטיפול</span>
+              </div>
+              <div style="margin-top:8px; padding:8px 10px; background:#f9fafb; border-radius:6px; font-size:12px; color:#4b5563;">
+                הזמנה #4521 לא הגיעה בזמן. ממתינים לתגובת הספק.
+              </div>
+              <div style="margin-top:6px; font-size:11px; color:#6b7280;">📋 1 פעולה · 0 הושלמו</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex:1;"></div>
+
+        <div style="display:flex; border-top:1px solid #e5e7eb; background:#fff; padding:8px 0 12px;">
+          <div style="flex:1; text-align:center;"><div style="font-size:20px;">📊</div><div style="font-size:10px; color:#9ca3af;">דשבורד</div></div>
+          <div style="flex:1; text-align:center;"><div style="font-size:20px;">✅</div><div style="font-size:10px; color:#9ca3af;">משימות</div></div>
+          <div style="flex:1; text-align:center;"><div style="font-size:20px;">🏢</div><div style="font-size:10px; color:#9ca3af;">ספקים</div></div>
+          <div style="flex:1; text-align:center;"><div style="font-size:20px;">⚠️</div><div style="font-size:10px; color:#111827; font-weight:600;">תקלות</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

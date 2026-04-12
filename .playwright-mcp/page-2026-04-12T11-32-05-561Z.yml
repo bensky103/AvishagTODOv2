@@ -1,0 +1,40 @@
+- generic [ref=e2]:
+  - complementary [ref=e3]:
+    - generic [ref=e5]:
+      - generic [ref=e7]: א
+      - generic [ref=e8]:
+        - heading "אבישג" [level=1] [ref=e9]
+        - paragraph [ref=e10]: ניהול רכש
+    - navigation [ref=e11]:
+      - link "דשבורד" [ref=e12] [cursor=pointer]:
+        - /url: /
+        - img [ref=e14]
+        - generic [ref=e19]: דשבורד
+      - link "משימות" [ref=e20] [cursor=pointer]:
+        - /url: /tasks
+        - img [ref=e22]
+        - generic [ref=e25]: משימות
+      - link "ספקים" [ref=e27] [cursor=pointer]:
+        - /url: /suppliers
+        - img [ref=e29]
+        - generic [ref=e32]: ספקים
+      - link "תקלות" [ref=e33] [cursor=pointer]:
+        - /url: /issues
+        - img [ref=e35]
+        - generic [ref=e37]: תקלות
+    - generic [ref=e39]:
+      - generic [ref=e41]: אב
+      - generic [ref=e42]:
+        - paragraph [ref=e43]: אבישג
+        - paragraph [ref=e44]: מנהלת רכש
+  - main [ref=e45]:
+    - generic [ref=e46]:
+      - generic [ref=e48]:
+        - heading "משימות" [level=1] [ref=e49]
+        - paragraph [ref=e50]: 0 משימות פתוחות
+        - generic [ref=e52]:
+          - button "הכל" [ref=e53] [cursor=pointer]
+          - button "פתוחות" [ref=e54] [cursor=pointer]
+          - button "הושלמו" [ref=e55] [cursor=pointer]
+      - button "הוספה" [ref=e61] [cursor=pointer]:
+        - img [ref=e62]

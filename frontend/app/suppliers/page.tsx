@@ -31,64 +31,82 @@ export default function SuppliersPage() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
       <PageHeader title="ספקים" />
 
-      <div className="p-4 space-y-4">
+      <div className="max-w-5xl mx-auto p-4 md:p-6 -mt-4 space-y-4">
         {/* Search */}
         <div className="relative">
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-            🔍
+          <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
           </span>
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="חיפוש ספק..."
-            className="w-full bg-white rounded-xl shadow-sm pr-10 pl-4 py-3 text-sm font-body text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 border border-gray-100"
+            className="w-full bg-white rounded-xl shadow-card pr-11 pl-4 py-3 text-sm font-body text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 border border-gray-100 transition-shadow"
           />
         </div>
 
         {/* Supplier List */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <p className="text-gray-400 font-body">טוען...</p>
+          <div className="flex items-center justify-center py-16">
+            <div className="w-7 h-7 border-2 border-brand-200 border-t-brand-500 rounded-full animate-spin" />
           </div>
         ) : filtered?.length === 0 ? (
-          <div className="flex items-center justify-center py-12">
-            <p className="text-gray-400 font-body text-sm">אין ספקים</p>
+          <div className="flex flex-col items-center justify-center py-16">
+            <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center mb-3">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+            </div>
+            <p className="text-text-secondary font-body text-sm">אין ספקים</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {filtered?.map((supplier) => {
               const openCount = openIssueCounts[supplier.id] || 0;
               return (
                 <button
                   key={supplier.id}
                   onClick={() => setSelectedSupplierId(supplier.id)}
-                  className="w-full bg-white rounded-xl shadow-sm p-4 flex items-center justify-between hover:shadow-md transition-shadow text-right"
+                  className="w-full bg-white rounded-xl border border-gray-100 shadow-card p-4 flex items-center justify-between hover:shadow-card-hover transition-all duration-200 text-right group"
                 >
-                  <div className="flex-1 min-w-0">
-                    <p className="font-body font-semibold text-gray-900">
-                      {supplier.name}
-                    </p>
-                    {supplier.contact_info && (
-                      <p className="text-xs font-body text-gray-500 mt-1 truncate">
-                        {supplier.contact_info}
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center flex-shrink-0 group-hover:bg-brand-100 transition-colors">
+                      <span className="text-brand-600 font-heading text-sm">
+                        {supplier.name.charAt(0)}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-body font-semibold text-gray-900 text-sm">
+                        {supplier.name}
                       </p>
-                    )}
+                      {supplier.contact_info && (
+                        <p className="text-xs font-body text-text-secondary mt-0.5 truncate">
+                          {supplier.contact_info}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3 mr-4">
+                  <div className="flex items-center gap-3 mr-3">
                     {openCount > 0 ? (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-body font-medium bg-red-100 text-red-700">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-red-50 text-red-600 ring-1 ring-red-100">
                         {openCount} תקלות
                       </span>
                     ) : (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-body font-medium bg-green-100 text-green-700">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-600 ring-1 ring-emerald-100">
                         תקין
                       </span>
                     )}
-                    <span className="text-gray-300 text-lg">&#x2039;</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:stroke-gray-400 transition-colors">
+                      <polyline points="15 18 9 12 15 6" />
+                    </svg>
                   </div>
                 </button>
               );

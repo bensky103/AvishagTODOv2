@@ -1,0 +1,118 @@
+<h2>Visual Direction</h2>
+<p class="subtitle">Which mobile-first style feels right for a purchase manager's daily tool?</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 12px; padding: 20px; color: white; font-family: system-ui;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <span style="font-size:18px; font-weight:700;">משימות</span>
+          <span style="background:#3b82f6; padding:4px 10px; border-radius:20px; font-size:12px;">4 פתוחות</span>
+        </div>
+        <div style="background:rgba(255,255,255,0.08); border-radius:10px; padding:12px; margin-bottom:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-size:14px; font-weight:600;">הזמנת חומרי גלם</div>
+              <div style="font-size:11px; color:#94a3b8; margin-top:2px;">דחיפות גבוהה · מחר</div>
+            </div>
+            <div style="width:20px; height:20px; border:2px solid #3b82f6; border-radius:50%;"></div>
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,0.08); border-radius:10px; padding:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-size:14px; font-weight:600;">בדיקת ספק חדש</div>
+              <div style="font-size:11px; color:#94a3b8; margin-top:2px;">דחיפות בינונית · 15/04</div>
+            </div>
+            <div style="width:20px; height:20px; border:2px solid #3b82f6; border-radius:50%;"></div>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:16px;">
+          <div style="flex:1; background:#3b82f6; text-align:center; padding:10px; border-radius:8px; font-size:13px; font-weight:600;">משימות</div>
+          <div style="flex:1; background:rgba(255,255,255,0.08); text-align:center; padding:10px; border-radius:8px; font-size:13px; color:#94a3b8;">ספקים</div>
+          <div style="flex:1; background:rgba(255,255,255,0.08); text-align:center; padding:10px; border-radius:8px; font-size:13px; color:#94a3b8;">תקלות</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Dark Professional</h3>
+      <p>Dark theme, blue accents. Sleek, modern feel. Reduces eye strain. Common in productivity tools like Things, Todoist dark mode.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: #ffffff; border-radius: 12px; padding: 20px; color: #1a1a1a; font-family: system-ui; border: 1px solid #e5e7eb;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <span style="font-size:18px; font-weight:700; color:#111827;">משימות</span>
+          <span style="background:#dbeafe; color:#1d4ed8; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:600;">4 פתוחות</span>
+        </div>
+        <div style="background:#f9fafb; border-radius:10px; padding:12px; margin-bottom:8px; border:1px solid #f3f4f6;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-size:14px; font-weight:600; color:#111827;">הזמנת חומרי גלם</div>
+              <div style="font-size:11px; color:#6b7280; margin-top:2px;">🔴 דחיפות גבוהה · מחר</div>
+            </div>
+            <div style="width:20px; height:20px; border:2px solid #d1d5db; border-radius:6px;"></div>
+          </div>
+        </div>
+        <div style="background:#f9fafb; border-radius:10px; padding:12px; border:1px solid #f3f4f6;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-size:14px; font-weight:600; color:#111827;">בדיקת ספק חדש</div>
+              <div style="font-size:11px; color:#6b7280; margin-top:2px;">🟡 דחיפות בינונית · 15/04</div>
+            </div>
+            <div style="width:20px; height:20px; border:2px solid #d1d5db; border-radius:6px;"></div>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:16px;">
+          <div style="flex:1; background:#111827; color:white; text-align:center; padding:10px; border-radius:8px; font-size:13px; font-weight:600;">משימות</div>
+          <div style="flex:1; background:#f3f4f6; text-align:center; padding:10px; border-radius:8px; font-size:13px; color:#6b7280;">ספקים</div>
+          <div style="flex:1; background:#f3f4f6; text-align:center; padding:10px; border-radius:8px; font-size:13px; color:#6b7280;">תקלות</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Clean Light</h3>
+      <p>White/gray, minimal. Apple-inspired clarity. Great readability in bright environments (warehouses, offices). Familiar, professional.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: linear-gradient(135deg, #faf5ff 0%, #f0e7ff 100%); border-radius: 12px; padding: 20px; color: #1a1a1a; font-family: system-ui;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <span style="font-size:18px; font-weight:700; color:#4c1d95;">משימות</span>
+          <span style="background:#7c3aed; color:white; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:600;">4 פתוחות</span>
+        </div>
+        <div style="background:white; border-radius:10px; padding:12px; margin-bottom:8px; box-shadow: 0 1px 3px rgba(124,58,237,0.1);">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-size:14px; font-weight:600; color:#1e1b4b;">הזמנת חומרי גלם</div>
+              <div style="font-size:11px; color:#7c3aed; margin-top:2px;">דחיפות גבוהה · מחר</div>
+            </div>
+            <div style="width:20px; height:20px; border:2px solid #7c3aed; border-radius:50%; background:rgba(124,58,237,0.1);"></div>
+          </div>
+        </div>
+        <div style="background:white; border-radius:10px; padding:12px; box-shadow: 0 1px 3px rgba(124,58,237,0.1);">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-size:14px; font-weight:600; color:#1e1b4b;">בדיקת ספק חדש</div>
+              <div style="font-size:11px; color:#6d28d9; margin-top:2px;">דחיפות בינונית · 15/04</div>
+            </div>
+            <div style="width:20px; height:20px; border:2px solid #c4b5fd; border-radius:50%;"></div>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:16px;">
+          <div style="flex:1; background:#7c3aed; color:white; text-align:center; padding:10px; border-radius:8px; font-size:13px; font-weight:600;">משימות</div>
+          <div style="flex:1; background:white; text-align:center; padding:10px; border-radius:8px; font-size:13px; color:#6d28d9; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">ספקים</div>
+          <div style="flex:1; background:white; text-align:center; padding:10px; border-radius:8px; font-size:13px; color:#6d28d9; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">תקלות</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Soft Branded</h3>
+      <p>Purple accent on soft backgrounds. More personality and brand identity. Friendly yet professional. Stands out from generic tools.</p>
+    </div>
+  </div>
+</div>

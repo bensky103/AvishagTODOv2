@@ -34,7 +34,7 @@ export default function TasksPage() {
   const openCount = tasks?.filter((t) => !t.is_completed).length ?? 0;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen">
       <PageHeader
         title="משימות"
         subtitle={`${openCount} משימות פתוחות`}
@@ -47,14 +47,20 @@ export default function TasksPage() {
         />
       </PageHeader>
 
-      <div className="p-4 space-y-3">
+      <div className="max-w-5xl mx-auto p-4 md:p-6 -mt-4 space-y-2.5">
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <p className="text-gray-400 font-body">טוען...</p>
+          <div className="flex items-center justify-center py-16">
+            <div className="w-7 h-7 border-2 border-brand-200 border-t-brand-500 rounded-full animate-spin" />
           </div>
         ) : tasks?.length === 0 ? (
-          <div className="flex items-center justify-center py-12">
-            <p className="text-gray-400 font-body text-sm">אין משימות</p>
+          <div className="flex flex-col items-center justify-center py-16">
+            <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center mb-3">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 11l3 3L22 4" />
+                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+              </svg>
+            </div>
+            <p className="text-text-secondary font-body text-sm">אין משימות</p>
           </div>
         ) : (
           tasks?.map((task) => (

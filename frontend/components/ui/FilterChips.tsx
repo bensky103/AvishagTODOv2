@@ -21,10 +21,10 @@ export function FilterChips({
         const classes =
           variant === "header"
             ? active
-              ? "bg-white text-ocean-600 shadow-sm"
-              : "bg-white/20 text-white hover:bg-white/30"
+              ? "bg-white text-brand-700 shadow-sm"
+              : "bg-white/15 text-white/90 hover:bg-white/25"
             : active
-              ? "bg-ocean-500 text-white shadow-sm"
+              ? "bg-brand-500 text-white shadow-sm"
               : "bg-gray-100 text-gray-600 hover:bg-gray-200";
 
         return (
@@ -32,7 +32,7 @@ export function FilterChips({
             key={opt.value}
             onClick={() => onChange(opt.value)}
             className={`
-              flex-shrink-0 rounded-full px-4 py-1.5 text-sm font-medium
+              flex-shrink-0 rounded-lg px-4 py-1.5 text-sm font-medium
               transition-all duration-150 ${classes}
             `}
           >

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
@@ -16,8 +16,12 @@ async def create_supplier(data: SupplierCreate, session: AsyncSession = Depends(
 
 
 @router.get("/", response_model=list[SupplierResponse])
-async def list_suppliers(session: AsyncSession = Depends(get_session)):
-    return await supplier_service.list_suppliers(session)
+async def list_suppliers(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
+    session: AsyncSession = Depends(get_session),
+):
+    return await supplier_service.list_suppliers(session, skip=skip, limit=limit)
 
 
 @router.get("/{supplier_id}", response_model=SupplierResponse)

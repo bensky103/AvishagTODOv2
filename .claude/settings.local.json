@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wc -l backend/**/*.py frontend/**/*.tsx)",
+      "Bash(ls:*)",
+      "Bash(bash:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(find . -type f -exec wc -l {} +)",
+      "Bash(npx next:*)",
+      "Bash(pip install:*)",
+      "Bash(python:*)",
+      "Bash(python3 -c ':*)",
+      "Bash(start:*)",
+      "Bash(curl:*)"
+    ]
+  }
+}

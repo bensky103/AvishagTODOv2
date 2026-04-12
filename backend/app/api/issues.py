@@ -1,18 +1,21 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
 from app.schemas.action_item import ActionItemCreate, ActionItemResponse
 from app.schemas.issue_report import IssueReportCreate, IssueReportResponse, IssueReportUpdate
-from app.services import issue_service
+from app.services import issue_service, supplier_service
 
 router = APIRouter()
 
 
 @router.post("/", response_model=IssueReportResponse, status_code=201)
 async def create_issue(data: IssueReportCreate, session: AsyncSession = Depends(get_session)):
+    supplier = await supplier_service.get_supplier(session, data.supplier_id)
+    if not supplier:
+        raise HTTPException(status_code=400, detail="Supplier not found")
     return await issue_service.create_issue_report(
         session, supplier_id=data.supplier_id, product_name=data.product_name,
         sku=data.sku, arrival_date=data.arrival_date,
@@ -24,9 +27,13 @@ async def create_issue(data: IssueReportCreate, session: AsyncSession = Depends(
 async def list_issues(
     supplier_id: Optional[int] = None,
     status: Optional[str] = None,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
     session: AsyncSession = Depends(get_session),
 ):
-    return await issue_service.list_issue_reports(session, supplier_id=supplier_id, status=status)
+    return await issue_service.list_issue_reports(
+        session, supplier_id=supplier_id, status=status, skip=skip, limit=limit,
+    )
 
 
 @router.get("/{issue_id}", response_model=IssueReportResponse)

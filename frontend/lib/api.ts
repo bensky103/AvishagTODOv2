@@ -32,11 +32,11 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 export const tasks = {
   list: (params?: Record<string, string>) => {
     const qs = params ? "?" + new URLSearchParams(params).toString() : "";
-    return request<Task[]>(`/tasks/${qs}`);
+    return request<Task[]>(`/tasks${qs}`);
   },
   get: (id: number) => request<Task>(`/tasks/${id}`),
   create: (data: TaskCreate) =>
-    request<Task>("/tasks/", { method: "POST", body: JSON.stringify(data) }),
+    request<Task>("/tasks", { method: "POST", body: JSON.stringify(data) }),
   update: (id: number, data: TaskUpdate) =>
     request<Task>(`/tasks/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
   complete: (id: number) =>
@@ -46,10 +46,10 @@ export const tasks = {
 };
 
 export const suppliers = {
-  list: () => request<Supplier[]>("/suppliers/"),
+  list: () => request<Supplier[]>("/suppliers"),
   get: (id: number) => request<Supplier>(`/suppliers/${id}`),
   create: (data: SupplierCreate) =>
-    request<Supplier>("/suppliers/", { method: "POST", body: JSON.stringify(data) }),
+    request<Supplier>("/suppliers", { method: "POST", body: JSON.stringify(data) }),
   update: (id: number, data: SupplierUpdate) =>
     request<Supplier>(`/suppliers/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
 };
@@ -57,11 +57,11 @@ export const suppliers = {
 export const issues = {
   list: (params?: Record<string, string>) => {
     const qs = params ? "?" + new URLSearchParams(params).toString() : "";
-    return request<IssueReport[]>(`/issues/${qs}`);
+    return request<IssueReport[]>(`/issues${qs}`);
   },
   get: (id: number) => request<IssueReport>(`/issues/${id}`),
   create: (data: IssueCreate) =>
-    request<IssueReport>("/issues/", { method: "POST", body: JSON.stringify(data) }),
+    request<IssueReport>("/issues", { method: "POST", body: JSON.stringify(data) }),
   update: (id: number, data: IssueUpdate) =>
     request<IssueReport>(`/issues/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
   resolve: (id: number) =>

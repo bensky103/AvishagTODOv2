@@ -24,35 +24,25 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center">
+    <div className="fixed inset-0 z-[60] flex items-end md:items-center justify-center">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/40 animate-fade-in"
+        className="absolute inset-0 bg-black/30 backdrop-blur-sm animate-fade-in"
         onClick={onClose}
       />
 
-      {/* Sheet */}
-      <div className="relative w-full max-w-lg bg-white rounded-t-2xl animate-slide-up max-h-[85vh] flex flex-col">
+      {/* Sheet — bottom sheet on mobile, centered modal on desktop */}
+      <div className="relative w-full max-w-lg bg-white rounded-t-2xl md:rounded-2xl animate-slide-up max-h-[85vh] flex flex-col shadow-modal md:mx-4">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
           <h2 className="font-heading text-lg text-gray-900">
             {title || ""}
           </h2>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400"
+            className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-gray-50 text-gray-400 transition-colors"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -60,7 +50,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
         </div>
 
         {/* Content */}
-        <div className="overflow-y-auto p-4">{children}</div>
+        <div className="overflow-y-auto p-5">{children}</div>
       </div>
     </div>
   );

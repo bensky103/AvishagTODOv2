@@ -4,17 +4,17 @@ import type { Task } from "@/lib/types";
 import { Badge } from "./Badge";
 
 const urgencyBorderColors: Record<string, string> = {
-  critical: "border-r-[#ef4444]",
-  high: "border-r-[#f59e0b]",
-  medium: "border-r-[#0ea5e9]",
-  low: "border-r-[#d1d5db]",
+  critical: "border-r-red-400",
+  high: "border-r-amber-400",
+  medium: "border-r-brand-400",
+  low: "border-r-gray-200",
 };
 
 const urgencyLabels: Record<string, string> = {
-  critical: "\u05E7\u05E8\u05D9\u05D8\u05D9",
-  high: "\u05D2\u05D1\u05D5\u05D4",
-  medium: "\u05D1\u05D9\u05E0\u05D5\u05E0\u05D9",
-  low: "\u05E0\u05DE\u05D5\u05DA",
+  critical: "קריטי",
+  high: "גבוה",
+  medium: "בינוני",
+  low: "נמוך",
 };
 
 function isOverdue(dateStr: string | null): boolean {
@@ -34,10 +34,10 @@ export function TaskCard({ task, onClick, onToggle }: TaskCardProps) {
   return (
     <div
       className={`
-        bg-white rounded-xl shadow-card border-r-4 p-3 flex items-start gap-3
-        transition-opacity duration-200
+        bg-white rounded-xl border border-gray-100 shadow-card border-r-4 p-3.5 flex items-start gap-3
+        transition-all duration-200 hover:shadow-card-hover
         ${urgencyBorderColors[task.urgency]}
-        ${task.is_completed ? "opacity-60" : ""}
+        ${task.is_completed ? "opacity-50" : ""}
       `}
       onClick={onClick}
       role={onClick ? "button" : undefined}
@@ -49,27 +49,17 @@ export function TaskCard({ task, onClick, onToggle }: TaskCardProps) {
           onToggle?.(task.id);
         }}
         className={`
-          mt-0.5 flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center
-          transition-colors duration-150
+          mt-0.5 flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center
+          transition-all duration-150
           ${
             task.is_completed
-              ? "bg-gray-700 border-gray-700"
-              : "border-gray-300 hover:border-ocean-400"
+              ? "bg-brand-500 border-brand-500"
+              : "border-gray-300 hover:border-brand-400"
           }
         `}
       >
         {task.is_completed && (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="white"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="20 6 9 17 4 12" />
           </svg>
         )}
@@ -90,8 +80,8 @@ export function TaskCard({ task, onClick, onToggle }: TaskCardProps) {
         <div className="flex items-center gap-2 mt-1.5 flex-wrap">
           {task.due_date && (
             <span
-              className={`text-xs ${
-                overdue ? "text-red-500 font-bold" : "text-gray-400"
+              className={`text-xs font-body ${
+                overdue ? "text-red-500 font-bold" : "text-text-secondary"
               }`}
             >
               {new Date(task.due_date).toLocaleDateString("he-IL")}
