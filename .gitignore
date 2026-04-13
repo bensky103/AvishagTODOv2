@@ -28,6 +28,10 @@ out/
 *.swp
 *.swo
 
+# Logs
+logs/
+!logs/.gitkeep
+
 # OS
 .DS_Store
 Thumbs.db

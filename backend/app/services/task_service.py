@@ -5,6 +5,7 @@ import structlog
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.action_item import ActionItem
 from app.models.task import Task
 
 logger = structlog.get_logger("task_service")
@@ -62,6 +63,11 @@ async def complete_task(session: AsyncSession, task_id: int) -> Task:
         raise ValueError(f"Task {task_id} not found")
     task.is_completed = True
     task.completed_at = datetime.now(UTC)
+    # Sync linked action items
+    stmt = select(ActionItem).where(ActionItem.task_id == task_id)
+    result = await session.execute(stmt)
+    for action in result.scalars().all():
+        action.is_completed = True
     await session.commit()
     await session.refresh(task)
     logger.info("task_completed", task_id=task_id)
@@ -74,6 +80,11 @@ async def reopen_task(session: AsyncSession, task_id: int) -> Task:
         raise ValueError(f"Task {task_id} not found")
     task.is_completed = False
     task.completed_at = None
+    # Sync linked action items
+    stmt = select(ActionItem).where(ActionItem.task_id == task_id)
+    result = await session.execute(stmt)
+    for action in result.scalars().all():
+        action.is_completed = False
     await session.commit()
     await session.refresh(task)
     logger.info("task_reopened", task_id=task_id)

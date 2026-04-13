@@ -86,6 +86,7 @@ export function useToggleTask() {
     },
     onSettled: () => {
       qc.invalidateQueries({ queryKey: ["tasks"] });
+      qc.invalidateQueries({ queryKey: ["issues"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });

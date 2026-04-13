@@ -117,6 +117,8 @@ export function useToggleActionItem() {
     onSettled: (_data, _err, { issueId }) => {
       qc.invalidateQueries({ queryKey: ["issues"] });
       qc.invalidateQueries({ queryKey: ["issues", issueId] });
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 }
