@@ -27,5 +27,6 @@ class TaskResponse(BaseModel):
     is_completed: bool
     created_at: datetime
     completed_at: Optional[datetime]
+    updated_at: Optional[datetime]
 
     model_config = {"from_attributes": True}

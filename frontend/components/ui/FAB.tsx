@@ -13,8 +13,8 @@ export function FAB({ onClick }: FABProps) {
       style={{
         width: 52,
         height: 52,
-        background: "linear-gradient(135deg, #6366f1, #4f46e5)",
-        boxShadow: "0 4px 14px rgba(99,102,241,0.4)",
+        background: "linear-gradient(135deg, #14a87a, #0d8c63)",
+        boxShadow: "0 4px 14px rgba(20,168,122,0.35)",
       }}
       aria-label="הוספה"
     >

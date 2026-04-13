@@ -57,7 +57,7 @@ export default function SupplierForm({
             toast("הספק עודכן בהצלחה", "success");
             onClose();
           },
-          onError: () => toast("שגיאה בעדכון הספק", "error"),
+          onError: (err: Error) => toast(err.message || "שגיאה בעדכון הספק", "error"),
         }
       );
     } else {
@@ -66,7 +66,7 @@ export default function SupplierForm({
           toast("הספק נוצר בהצלחה", "success");
           onClose();
         },
-        onError: () => toast("שגיאה ביצירת הספק", "error"),
+        onError: (err: Error) => toast(err.message || "שגיאה ביצירת הספק", "error"),
       });
     }
   };
@@ -82,7 +82,7 @@ export default function SupplierForm({
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Name */}
         <div>
-          <label className="block text-sm font-body text-gray-600 mb-1">
+          <label className="block text-sm font-body text-text-secondary mb-1">
             שם הספק *
           </label>
           <input
@@ -90,14 +90,14 @@ export default function SupplierForm({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="שם הספק"
-            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-body text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent"
             autoFocus
           />
         </div>
 
         {/* Contact Info */}
         <div>
-          <label className="block text-sm font-body text-gray-600 mb-1">
+          <label className="block text-sm font-body text-text-secondary mb-1">
             פרטי התקשרות
           </label>
           <input
@@ -105,13 +105,13 @@ export default function SupplierForm({
             value={contactInfo}
             onChange={(e) => setContactInfo(e.target.value)}
             placeholder="פרטי התקשרות"
-            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-body text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent"
           />
         </div>
 
         {/* Notes */}
         <div>
-          <label className="block text-sm font-body text-gray-600 mb-1">
+          <label className="block text-sm font-body text-text-secondary mb-1">
             הערות
           </label>
           <textarea
@@ -119,7 +119,7 @@ export default function SupplierForm({
             onChange={(e) => setNotes(e.target.value)}
             placeholder="הערות"
             rows={3}
-            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-body text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-y"
+            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent resize-y"
           />
         </div>
 
@@ -128,7 +128,7 @@ export default function SupplierForm({
           <button
             type="submit"
             disabled={!name.trim() || isPending}
-            className="flex-1 bg-sky-500 hover:bg-sky-600 disabled:bg-gray-300 text-white font-body font-medium py-2.5 rounded-xl transition-colors text-sm"
+            className="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-700 disabled:text-gray-500 text-white font-body font-medium py-2.5 rounded-xl transition-colors text-sm"
           >
             {isPending
               ? "שומר..."
@@ -139,7 +139,7 @@ export default function SupplierForm({
           <button
             type="button"
             onClick={onClose}
-            className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-body font-medium rounded-xl transition-colors text-sm"
+            className="px-6 py-2.5 bg-white/[0.05] hover:bg-white/[0.08] text-text-secondary font-body font-medium rounded-xl transition-colors text-sm"
           >
             ביטול
           </button>

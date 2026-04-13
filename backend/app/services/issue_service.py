@@ -1,6 +1,7 @@
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from typing import Optional
 
+import structlog
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -8,6 +9,8 @@ from sqlalchemy.orm import selectinload
 from app.models.action_item import ActionItem
 from app.models.issue_report import IssueReport
 from app.models.task import Task
+
+logger = structlog.get_logger("issue_service")
 
 
 async def create_issue_report(
@@ -27,6 +30,7 @@ async def create_issue_report(
     )
     session.add(issue)
     await session.commit()
+    logger.info("issue_created", issue_id=issue.id)
     return await get_issue_report(session, issue.id)
 
 
@@ -34,7 +38,7 @@ async def get_issue_report(session: AsyncSession, issue_id: int) -> Optional[Iss
     stmt = (
         select(IssueReport)
         .where(IssueReport.id == issue_id)
-        .options(selectinload(IssueReport.action_items))
+        .options(selectinload(IssueReport.action_items).selectinload(ActionItem.task))
     )
     result = await session.execute(stmt)
     return result.scalar_one_or_none()
@@ -47,7 +51,7 @@ async def list_issue_reports(
     skip: int = 0,
     limit: int = 100,
 ) -> list[IssueReport]:
-    stmt = select(IssueReport).options(selectinload(IssueReport.action_items))
+    stmt = select(IssueReport).options(selectinload(IssueReport.action_items).selectinload(ActionItem.task))
     if supplier_id:
         stmt = stmt.where(IssueReport.supplier_id == supplier_id)
     if status:
@@ -59,9 +63,12 @@ async def list_issue_reports(
 
 async def resolve_issue_report(session: AsyncSession, issue_id: int) -> IssueReport:
     issue = await session.get(IssueReport, issue_id)
+    if not issue:
+        raise ValueError(f"Issue {issue_id} not found")
     issue.status = "resolved"
-    issue.resolved_at = datetime.utcnow()
+    issue.resolved_at = datetime.now(UTC)
     await session.commit()
+    logger.info("issue_resolved", issue_id=issue_id)
     return await get_issue_report(session, issue_id)
 
 
@@ -70,18 +77,30 @@ async def update_issue(session: AsyncSession, issue_id: int, **kwargs) -> IssueR
     if not issue:
         raise ValueError(f"Issue {issue_id} not found")
     for key, value in kwargs.items():
-        if value is not None:
-            setattr(issue, key, value)
+        setattr(issue, key, value)
     await session.commit()
+    logger.info("issue_updated", issue_id=issue_id)
     return await get_issue_report(session, issue_id)
 
 
 async def reopen_issue_report(session: AsyncSession, issue_id: int) -> IssueReport:
     issue = await session.get(IssueReport, issue_id)
+    if not issue:
+        raise ValueError(f"Issue {issue_id} not found")
     issue.status = "open"
     issue.resolved_at = None
     await session.commit()
+    logger.info("issue_reopened", issue_id=issue_id)
     return await get_issue_report(session, issue_id)
+
+
+async def delete_issue_report(session: AsyncSession, issue_id: int) -> None:
+    issue = await session.get(IssueReport, issue_id)
+    if not issue:
+        raise ValueError(f"Issue {issue_id} not found")
+    await session.delete(issue)
+    await session.commit()
+    logger.info("issue_deleted", issue_id=issue_id)
 
 
 async def add_action_item(
@@ -110,11 +129,13 @@ async def add_action_item(
 
 async def complete_action_item(session: AsyncSession, action_item_id: int) -> ActionItem:
     action = await session.get(ActionItem, action_item_id)
+    if not action:
+        raise ValueError(f"ActionItem {action_item_id} not found")
     action.is_completed = True
     if action.task_id:
         task = await session.get(Task, action.task_id)
         task.is_completed = True
-        task.completed_at = datetime.utcnow()
+        task.completed_at = datetime.now(UTC)
     await session.commit()
     await session.refresh(action)
     return action
@@ -122,6 +143,8 @@ async def complete_action_item(session: AsyncSession, action_item_id: int) -> Ac
 
 async def uncomplete_action_item(session: AsyncSession, action_item_id: int) -> ActionItem:
     action = await session.get(ActionItem, action_item_id)
+    if not action:
+        raise ValueError(f"ActionItem {action_item_id} not found")
     action.is_completed = False
     if action.task_id:
         task = await session.get(Task, action.task_id)

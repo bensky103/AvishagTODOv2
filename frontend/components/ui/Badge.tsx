@@ -10,13 +10,13 @@ type BadgeVariant =
   | "resolved";
 
 const variantClasses: Record<BadgeVariant, string> = {
-  critical: "bg-red-50 text-red-600 ring-1 ring-red-100",
-  high: "bg-amber-50 text-amber-600 ring-1 ring-amber-100",
-  medium: "bg-sky-50 text-sky-600 ring-1 ring-sky-100",
-  low: "bg-gray-50 text-gray-500 ring-1 ring-gray-100",
-  open: "bg-red-50 text-red-600 ring-1 ring-red-100",
-  in_progress: "bg-amber-50 text-amber-600 ring-1 ring-amber-100",
-  resolved: "bg-emerald-50 text-emerald-600 ring-1 ring-emerald-100",
+  critical: "bg-red-500/10 text-red-400 ring-1 ring-red-500/20",
+  high: "bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20",
+  medium: "bg-teal-500/10 text-teal-400 ring-1 ring-teal-500/20",
+  low: "bg-white/[0.04] text-text-secondary ring-1 ring-white/[0.06]",
+  open: "bg-red-500/10 text-red-400 ring-1 ring-red-500/20",
+  in_progress: "bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20",
+  resolved: "bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20",
 };
 
 interface BadgeProps {

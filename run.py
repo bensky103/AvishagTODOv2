@@ -1,4 +1,8 @@
-"""Avishag Purchase Manager — start backend + frontend."""
+"""Avishag Purchase Manager — local development server.
+
+Builds the frontend static export, then serves everything from FastAPI on port 8000.
+Same as production (nginx + backend) but in a single process.
+"""
 
 import os
 import subprocess
@@ -20,31 +24,25 @@ if env_file.exists():
                 key, _, value = line.partition("=")
                 env[key.strip()] = value.strip()
 
+# Build frontend static export
+print("\n  Building frontend...")
+env["NEXT_PUBLIC_BUILD_MODE"] = "export"
+subprocess.run("npm run build", cwd=FRONTEND, shell=True, check=True, env=env)
+print("  Frontend built.\n")
+
 # Run migrations
 subprocess.run("alembic upgrade head", cwd=BACKEND, shell=True, check=True, env=env)
 
-# Start backend (port 8000)
+# Start backend (serves API + static frontend)
+print("  App: http://localhost:8000\n")
 backend = subprocess.Popen(
     [sys.executable, "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"],
     cwd=BACKEND,
     env=env,
 )
 
-# Start frontend (port 3000)
-frontend = subprocess.Popen(
-    ["npm", "run", "dev"],
-    cwd=FRONTEND,
-    env=env,
-    shell=True,
-)
-
-print("\n  Backend:  http://localhost:8000")
-print("  Frontend: http://localhost:3000  <-- open this one\n")
-
 try:
     backend.wait()
 except KeyboardInterrupt:
     backend.terminate()
-    frontend.terminate()
     backend.wait()
-    frontend.wait()

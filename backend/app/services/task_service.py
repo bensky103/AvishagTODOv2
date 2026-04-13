@@ -1,10 +1,13 @@
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from typing import Optional
 
+import structlog
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.task import Task
+
+logger = structlog.get_logger("task_service")
 
 
 async def create_task(
@@ -23,6 +26,7 @@ async def create_task(
     session.add(task)
     await session.commit()
     await session.refresh(task)
+    logger.info("task_created", task_id=task.id)
     return task
 
 
@@ -54,19 +58,25 @@ async def list_tasks(
 
 async def complete_task(session: AsyncSession, task_id: int) -> Task:
     task = await session.get(Task, task_id)
+    if not task:
+        raise ValueError(f"Task {task_id} not found")
     task.is_completed = True
-    task.completed_at = datetime.utcnow()
+    task.completed_at = datetime.now(UTC)
     await session.commit()
     await session.refresh(task)
+    logger.info("task_completed", task_id=task_id)
     return task
 
 
 async def reopen_task(session: AsyncSession, task_id: int) -> Task:
     task = await session.get(Task, task_id)
+    if not task:
+        raise ValueError(f"Task {task_id} not found")
     task.is_completed = False
     task.completed_at = None
     await session.commit()
     await session.refresh(task)
+    logger.info("task_reopened", task_id=task_id)
     return task
 
 
@@ -75,8 +85,17 @@ async def update_task(session: AsyncSession, task_id: int, **kwargs) -> Task:
     if not task:
         raise ValueError(f"Task {task_id} not found")
     for key, value in kwargs.items():
-        if value is not None:
-            setattr(task, key, value)
+        setattr(task, key, value)
     await session.commit()
     await session.refresh(task)
+    logger.info("task_updated", task_id=task_id)
     return task
+
+
+async def delete_task(session: AsyncSession, task_id: int) -> None:
+    task = await session.get(Task, task_id)
+    if not task:
+        raise ValueError(f"Task {task_id} not found")
+    await session.delete(task)
+    await session.commit()
+    logger.info("task_deleted", task_id=task_id)

@@ -14,7 +14,17 @@ export function useSupplier(id: number | undefined) {
     queryKey: ["suppliers", id],
     queryFn: () => api.get(id!),
     enabled: id !== undefined && id > 0,
-    staleTime: 60 * 1000,
+  });
+}
+
+export function useDeleteSupplier() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => api.delete(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["suppliers"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
   });
 }
 

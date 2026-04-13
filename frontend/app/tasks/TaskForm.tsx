@@ -4,7 +4,16 @@ import { useState, useEffect } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { useCreateTask, useUpdateTask } from "@/lib/queries/tasks";
 import { useToast } from "@/components/ui/Toast";
+import { DatePicker } from "@/components/ui/DatePicker";
+import { Select } from "@/components/ui/Select";
 import type { Task, Urgency } from "@/lib/types";
+
+const urgencyOptions = [
+  { value: "low", label: "נמוך" },
+  { value: "medium", label: "בינוני" },
+  { value: "high", label: "גבוה" },
+  { value: "critical", label: "קריטי" },
+];
 
 interface TaskFormProps {
   isOpen: boolean;
@@ -57,7 +66,7 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
             toast("המשימה עודכנה בהצלחה", "success");
             onClose();
           },
-          onError: () => toast("שגיאה בעדכון המשימה", "error"),
+          onError: (err: Error) => toast(err.message || "שגיאה בעדכון המשימה", "error"),
         }
       );
     } else {
@@ -66,7 +75,7 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
           toast("המשימה נוצרה בהצלחה", "success");
           onClose();
         },
-        onError: () => toast("שגיאה ביצירת המשימה", "error"),
+        onError: (err: Error) => toast(err.message || "שגיאה ביצירת המשימה", "error"),
       });
     }
   };
@@ -82,7 +91,7 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Title */}
         <div>
-          <label className="block text-sm font-body text-gray-600 mb-1">
+          <label className="block text-sm font-body text-text-secondary mb-1">
             שם המשימה *
           </label>
           <input
@@ -90,14 +99,14 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="שם המשימה"
-            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-body text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent"
             autoFocus
           />
         </div>
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-body text-gray-600 mb-1">
+          <label className="block text-sm font-body text-text-secondary mb-1">
             תיאור
           </label>
           <textarea
@@ -105,38 +114,32 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
             onChange={(e) => setDescription(e.target.value)}
             placeholder="תיאור (אופציונלי)"
             rows={3}
-            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-body text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-y"
+            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent resize-y"
           />
         </div>
 
         {/* Due Date */}
         <div>
-          <label className="block text-sm font-body text-gray-600 mb-1">
+          <label className="block text-sm font-body text-text-secondary mb-1">
             תאריך יעד
           </label>
-          <input
-            type="date"
+          <DatePicker
             value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-body text-gray-900 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+            onChange={(val) => setDueDate(val)}
+            placeholder="בחר תאריך יעד"
           />
         </div>
 
         {/* Urgency */}
         <div>
-          <label className="block text-sm font-body text-gray-600 mb-1">
+          <label className="block text-sm font-body text-text-secondary mb-1">
             דחיפות
           </label>
-          <select
+          <Select
             value={urgency}
-            onChange={(e) => setUrgency(e.target.value as Urgency)}
-            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-body text-gray-900 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-          >
-            <option value="low">נמוך</option>
-            <option value="medium">בינוני</option>
-            <option value="high">גבוה</option>
-            <option value="critical">קריטי</option>
-          </select>
+            onChange={(val) => setUrgency(val as Urgency)}
+            options={urgencyOptions}
+          />
         </div>
 
         {/* Actions */}
@@ -144,7 +147,7 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
           <button
             type="submit"
             disabled={!title.trim() || isPending}
-            className="flex-1 bg-sky-500 hover:bg-sky-600 disabled:bg-gray-300 text-white font-body font-medium py-2.5 rounded-xl transition-colors text-sm"
+            className="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-700 disabled:text-gray-500 text-white font-body font-medium py-2.5 rounded-xl transition-colors text-sm"
           >
             {isPending
               ? "שומר..."
@@ -155,7 +158,7 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
           <button
             type="button"
             onClick={onClose}
-            className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-body font-medium rounded-xl transition-colors text-sm"
+            className="px-6 py-2.5 bg-white/[0.05] hover:bg-white/[0.08] text-text-secondary font-body font-medium rounded-xl transition-colors text-sm"
           >
             ביטול
           </button>

@@ -14,7 +14,12 @@
       "Bash(start:*)",
       "Bash(curl:*)",
       "mcp__plugin_playwright_playwright__browser_tabs",
-      "mcp__plugin_playwright_playwright__browser_close"
+      "mcp__plugin_playwright_playwright__browser_close",
+      "Skill(code-review:code-review)",
+      "Bash(where gh:*)",
+      "Read(//c/Program Files/**)",
+      "Read(//c/Users/Guy Bensky/AppData/Local/Programs/**)",
+      "Bash(python3 -c \"import json,sys; prs=json.load\\(sys.stdin\\); [print\\(f'#{p[\\\\\"number\\\\\"]} {p[\\\\\"title\\\\\"]} \\({p[\\\\\"state\\\\\"]}\\)'\\) for p in prs]\")"
     ]
   }
 }

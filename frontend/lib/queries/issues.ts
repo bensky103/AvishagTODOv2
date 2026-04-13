@@ -9,11 +9,22 @@ export function useIssues(filters?: Record<string, string>) {
   });
 }
 
-export function useIssue(id: number) {
+export function useIssue(id: number | null) {
   return useQuery({
     queryKey: ["issues", id],
-    queryFn: () => api.get(id),
-    staleTime: 60 * 1000,
+    queryFn: () => api.get(id!),
+    enabled: id !== null && id > 0,
+  });
+}
+
+export function useDeleteIssue() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => api.delete(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["issues"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
   });
 }
 
@@ -92,6 +103,7 @@ export function useAddActionItem() {
     mutationFn: ({ issueId, data }: { issueId: number; data: ActionItemCreate }) =>
       api.addActionItem(issueId, data),
     onSettled: (_data, _err, { issueId }) => {
+      qc.invalidateQueries({ queryKey: ["issues"] });
       qc.invalidateQueries({ queryKey: ["issues", issueId] });
     },
   });
@@ -100,10 +112,11 @@ export function useAddActionItem() {
 export function useToggleActionItem() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, isCompleted }: { id: number; isCompleted: boolean }) =>
+    mutationFn: ({ id, isCompleted, issueId }: { id: number; isCompleted: boolean; issueId: number }) =>
       isCompleted ? api.uncompleteActionItem(id) : api.completeActionItem(id),
-    onSettled: () => {
+    onSettled: (_data, _err, { issueId }) => {
       qc.invalidateQueries({ queryKey: ["issues"] });
+      qc.invalidateQueries({ queryKey: ["issues", issueId] });
     },
   });
 }

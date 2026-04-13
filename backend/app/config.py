@@ -6,6 +6,8 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     telegram_bot_token: str = ""
     telegram_allowed_user_id: int = 0
+    pin_code: str = "0000"
+    rate_limit: str = "60/minute"
 
     model_config = {"env_file": ".env"}
 

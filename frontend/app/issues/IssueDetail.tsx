@@ -8,6 +8,7 @@ import {
   useReopenIssue,
   useAddActionItem,
   useToggleActionItem,
+  useDeleteIssue,
 } from "@/lib/queries/issues";
 import { useSupplier } from "@/lib/queries/suppliers";
 import { Modal } from "@/components/ui/Modal";
@@ -20,16 +21,18 @@ interface IssueDetailProps {
 }
 
 export default function IssueDetail({ issueId, onClose }: IssueDetailProps) {
-  const { data: issue, isLoading } = useIssue(issueId!);
-  const { data: supplier } = useSupplier(issue?.supplier_id!);
+  const { data: issue, isLoading } = useIssue(issueId);
+  const { data: supplier } = useSupplier(issue?.supplier_id ?? 0);
   const resolveIssue = useResolveIssue();
   const reopenIssue = useReopenIssue();
   const addActionItem = useAddActionItem();
   const toggleActionItem = useToggleActionItem();
+  const deleteIssue = useDeleteIssue();
   const { toast } = useToast();
 
   const [newAction, setNewAction] = useState("");
   const [createAsTask, setCreateAsTask] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   if (!issueId) return null;
 
@@ -72,7 +75,7 @@ export default function IssueDetail({ issueId, onClose }: IssueDetailProps) {
 
   const handleToggleAction = (actionItem: any) => {
     toggleActionItem.mutate(
-      { id: actionItem.id, isCompleted: actionItem.is_completed },
+      { id: actionItem.id, isCompleted: actionItem.is_completed, issueId: issueId! },
       {
         onError: () => toast("שגיאה בעדכון הפעולה", "error"),
       }
@@ -91,14 +94,14 @@ export default function IssueDetail({ issueId, onClose }: IssueDetailProps) {
     >
       {isLoading || !issue ? (
         <div className="flex items-center justify-center py-8">
-          <p className="text-gray-400 font-body">טוען...</p>
+          <p className="text-text-secondary font-body">טוען...</p>
         </div>
       ) : (
         <div className="space-y-4">
           {/* Issue Info */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="font-heading text-gray-900">פרטי תקלה</h2>
+              <h2 className="font-heading text-text-primary">פרטי תקלה</h2>
               <Badge
                 variant={
                   issue.status === "open"
@@ -118,30 +121,30 @@ export default function IssueDetail({ issueId, onClose }: IssueDetailProps) {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <p className="text-xs font-body text-gray-500">ספק</p>
-                <p className="text-sm font-body text-gray-900">
+                <p className="text-xs font-body text-text-secondary">ספק</p>
+                <p className="text-sm font-body text-text-primary">
                   {supplier?.name || "טוען..."}
                 </p>
               </div>
               <div>
-                <p className="text-xs font-body text-gray-500">תאריך הגעה</p>
-                <p className="text-sm font-body text-gray-900">
+                <p className="text-xs font-body text-text-secondary">תאריך הגעה</p>
+                <p className="text-sm font-body text-text-primary">
                   {new Date(issue.arrival_date).toLocaleDateString("he-IL")}
                 </p>
               </div>
               {issue.sku && (
                 <div>
-                  <p className="text-xs font-body text-gray-500">מק״ט</p>
-                  <p className="text-sm font-body text-gray-900">{issue.sku}</p>
+                  <p className="text-xs font-body text-text-secondary">מק״ט</p>
+                  <p className="text-sm font-body text-text-primary">{issue.sku}</p>
                 </div>
               )}
             </div>
 
             <div>
-              <p className="text-xs font-body text-gray-500 mb-1">
+              <p className="text-xs font-body text-text-secondary mb-1">
                 תיאור הבעיה
               </p>
-              <p className="text-sm font-body text-gray-700 leading-relaxed">
+              <p className="text-sm font-body text-gray-300 leading-relaxed">
                 {issue.problem_description}
               </p>
             </div>
@@ -153,7 +156,7 @@ export default function IssueDetail({ issueId, onClose }: IssueDetailProps) {
               <button
                 onClick={handleResolve}
                 disabled={resolveIssue.isPending}
-                className="flex-1 py-2.5 rounded-xl font-body font-medium text-sm bg-green-50 text-green-700 hover:bg-green-100 transition-colors disabled:opacity-50"
+                className="flex-1 py-2.5 rounded-xl font-body font-medium text-sm bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
               >
                 {resolveIssue.isPending ? "מעדכן..." : "סימון כנפתרה"}
               </button>
@@ -161,7 +164,7 @@ export default function IssueDetail({ issueId, onClose }: IssueDetailProps) {
               <button
                 onClick={handleReopen}
                 disabled={reopenIssue.isPending}
-                className="flex-1 py-2.5 rounded-xl font-body font-medium text-sm bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors disabled:opacity-50"
+                className="flex-1 py-2.5 rounded-xl font-body font-medium text-sm bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition-colors disabled:opacity-50"
               >
                 {reopenIssue.isPending ? "מעדכן..." : "פתיחה מחדש"}
               </button>
@@ -169,13 +172,13 @@ export default function IssueDetail({ issueId, onClose }: IssueDetailProps) {
           </div>
 
           {/* Action Items */}
-          <div className="border-t border-gray-100 pt-3">
-            <h3 className="font-heading text-gray-900 mb-3">
+          <div className="border-t border-white/[0.05] pt-3">
+            <h3 className="font-heading text-text-primary mb-3">
               פעולות ({completedCount}/{totalCount})
             </h3>
 
             {totalCount === 0 ? (
-              <p className="text-sm font-body text-gray-400 mb-4">
+              <p className="text-sm font-body text-text-secondary mb-4">
                 אין פעולות עדיין
               </p>
             ) : (
@@ -183,14 +186,14 @@ export default function IssueDetail({ issueId, onClose }: IssueDetailProps) {
                 {issue.action_items?.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-start gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors"
+                    className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/[0.03] transition-colors"
                   >
                     <button
                       onClick={() => handleToggleAction(item)}
                       className={`w-5 h-5 rounded border-2 flex-shrink-0 mt-0.5 flex items-center justify-center text-xs transition-colors ${
                         item.is_completed
-                          ? "bg-green-500 border-green-500 text-white"
-                          : "border-gray-300 hover:border-sky-500"
+                          ? "bg-emerald-500 border-emerald-500 text-white"
+                          : "border-gray-600 hover:border-emerald-400"
                       }`}
                     >
                       {item.is_completed && "✓"}
@@ -199,8 +202,8 @@ export default function IssueDetail({ issueId, onClose }: IssueDetailProps) {
                       <span
                         className={`font-body text-sm ${
                           item.is_completed
-                            ? "line-through text-gray-400"
-                            : "text-gray-900"
+                            ? "line-through text-gray-500"
+                            : "text-text-primary"
                         }`}
                       >
                         {item.description}
@@ -209,7 +212,7 @@ export default function IssueDetail({ issueId, onClose }: IssueDetailProps) {
                         <Link
                           href={`/tasks?selected=${item.task_id}`}
                           onClick={onClose}
-                          className="block text-xs text-sky-500 hover:underline font-body mt-1"
+                          className="block text-xs text-emerald-400 hover:underline font-body mt-1"
                         >
                           משימה מקושרת →
                         </Link>
@@ -223,15 +226,15 @@ export default function IssueDetail({ issueId, onClose }: IssueDetailProps) {
             {/* Add Action Item Form */}
             <form
               onSubmit={handleAddAction}
-              className="border-t border-gray-100 pt-3 space-y-3"
+              className="border-t border-white/[0.05] pt-3 space-y-3"
             >
-              <p className="text-sm font-heading text-gray-700">הוסף פעולה</p>
+              <p className="text-sm font-heading text-text-secondary">הוסף פעולה</p>
               <input
                 type="text"
                 value={newAction}
                 onChange={(e) => setNewAction(e.target.value)}
                 placeholder="תיאור הפעולה..."
-                className="w-full bg-slate-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-body text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent"
               />
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -239,16 +242,16 @@ export default function IssueDetail({ issueId, onClose }: IssueDetailProps) {
                     type="checkbox"
                     checked={createAsTask}
                     onChange={(e) => setCreateAsTask(e.target.checked)}
-                    className="w-4 h-4 rounded border-gray-300 text-sky-500 focus:ring-sky-500"
+                    className="w-4 h-4 rounded border-gray-600 text-emerald-500 focus:ring-emerald-500 bg-surface-raised"
                   />
-                  <span className="text-xs font-body text-gray-600">
+                  <span className="text-xs font-body text-text-secondary">
                     צור גם כמשימה
                   </span>
                 </label>
                 <button
                   type="submit"
                   disabled={!newAction.trim() || addActionItem.isPending}
-                  className="px-4 py-2 bg-sky-500 hover:bg-sky-600 disabled:bg-gray-300 text-white font-body font-medium rounded-xl transition-colors text-sm"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-700 disabled:text-gray-500 text-white font-body font-medium rounded-xl transition-colors text-sm"
                 >
                   {addActionItem.isPending ? "מוסיף..." : "הוסף"}
                 </button>
@@ -257,7 +260,7 @@ export default function IssueDetail({ issueId, onClose }: IssueDetailProps) {
           </div>
 
           {/* Metadata */}
-          <div className="text-xs font-body text-gray-400 space-y-1 border-t border-gray-100 pt-3">
+          <div className="text-xs font-body text-text-secondary space-y-1 border-t border-white/[0.05] pt-3">
             <p>
               נוצר: {new Date(issue.created_at).toLocaleDateString("he-IL")}
             </p>
@@ -266,6 +269,39 @@ export default function IssueDetail({ issueId, onClose }: IssueDetailProps) {
                 נפתר:{" "}
                 {new Date(issue.resolved_at).toLocaleDateString("he-IL")}
               </p>
+            )}
+          </div>
+
+          {/* Delete */}
+          <div className="pt-1">
+            {!confirmDelete ? (
+              <button
+                onClick={() => setConfirmDelete(true)}
+                className="w-full py-2 rounded-xl font-body text-sm text-red-400/60 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+              >
+                מחיקת תקלה
+              </button>
+            ) : (
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    deleteIssue.mutate(issue.id, {
+                      onSuccess: () => { toast("התקלה נמחקה", "success"); onClose(); },
+                      onError: (err: Error) => toast(err.message || "שגיאה במחיקה", "error"),
+                    });
+                  }}
+                  disabled={deleteIssue.isPending}
+                  className="flex-1 py-2.5 rounded-xl font-body font-medium text-sm bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                >
+                  {deleteIssue.isPending ? "מוחק..." : "אישור מחיקה"}
+                </button>
+                <button
+                  onClick={() => setConfirmDelete(false)}
+                  className="flex-1 py-2.5 rounded-xl font-body font-medium text-sm bg-white/[0.04] text-text-secondary hover:bg-white/[0.08] transition-colors"
+                >
+                  ביטול
+                </button>
+              </div>
             )}
           </div>
         </div>
