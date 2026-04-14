@@ -65,11 +65,15 @@ async def update_issue(issue_id: int, data: IssueReportUpdate, session: AsyncSes
     issue = await issue_service.get_issue_report(session, issue_id)
     if not issue:
         raise HTTPException(status_code=404, detail="Issue not found")
-    return await issue_service.update_issue(
-        session, issue_id,
-        product_name=data.product_name, sku=data.sku,
-        problem_description=data.problem_description, status=data.status,
-    )
+    return await issue_service.update_issue(session, issue_id, **data.model_dump(exclude_unset=True))
+
+
+@router.delete("/{issue_id}", status_code=204)
+async def delete_issue(issue_id: int, session: AsyncSession = Depends(get_session)):
+    issue = await issue_service.get_issue_report(session, issue_id)
+    if not issue:
+        raise HTTPException(status_code=404, detail="Issue not found")
+    await issue_service.delete_issue_report(session, issue_id)
 
 
 @router.post("/{issue_id}/action-items", response_model=ActionItemResponse, status_code=201)
@@ -89,11 +93,17 @@ async def add_action_item(
 async def complete_action_item(
     action_item_id: int, session: AsyncSession = Depends(get_session),
 ):
-    return await issue_service.complete_action_item(session, action_item_id)
+    try:
+        return await issue_service.complete_action_item(session, action_item_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Action item not found")
 
 
 @router.post("/action-items/{action_item_id}/uncomplete", response_model=ActionItemResponse)
 async def uncomplete_action_item(
     action_item_id: int, session: AsyncSession = Depends(get_session),
 ):
-    return await issue_service.uncomplete_action_item(session, action_item_id)
+    try:
+        return await issue_service.uncomplete_action_item(session, action_item_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Action item not found")

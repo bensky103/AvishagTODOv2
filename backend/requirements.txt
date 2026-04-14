@@ -10,3 +10,6 @@ python-telegram-bot==21.11.1
 structlog==25.1.0
 httpx==0.28.1
 openai==1.78.1
+slowapi==0.1.9
+pytest==8.3.5
+pytest-asyncio==0.24.0

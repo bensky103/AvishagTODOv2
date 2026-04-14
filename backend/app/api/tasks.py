@@ -62,8 +62,12 @@ async def update_task(task_id: int, data: TaskUpdate, session: AsyncSession = De
     task = await task_service.get_task(session, task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
-    return await task_service.update_task(
-        session, task_id,
-        title=data.title, description=data.description,
-        due_date=data.due_date, urgency=data.urgency,
-    )
+    return await task_service.update_task(session, task_id, **data.model_dump(exclude_unset=True))
+
+
+@router.delete("/{task_id}", status_code=204)
+async def delete_task(task_id: int, session: AsyncSession = Depends(get_session)):
+    task = await task_service.get_task(session, task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    await task_service.delete_task(session, task_id)

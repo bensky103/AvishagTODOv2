@@ -7,23 +7,26 @@ import { BottomNav } from "./BottomNav";
 import { useTasks } from "@/lib/queries/tasks";
 import { useIssues } from "@/lib/queries/issues";
 import { useSuppliers } from "@/lib/queries/suppliers";
+import { useAuth } from "@/lib/auth";
+import { PinScreen } from "@/components/PinScreen";
 
 const SIDEBAR_WIDE = 240;
 const SIDEBAR_NARROW = 68;
 
-// Colors
+// Colors — dark professional with teal accent
 const C = {
-  bg: "#0f172a",         // deep navy
-  bgLight: "#1e293b",    // slightly lighter navy
-  accent: "#6366f1",     // indigo accent
-  accentGlow: "rgba(99,102,241,0.25)",
-  accentBg: "rgba(99,102,241,0.08)",
-  accentBadge: "rgba(99,102,241,0.15)",
-  textMuted: "rgba(255,255,255,0.4)",
-  textDefault: "rgba(255,255,255,0.55)",
-  textHover: "rgba(255,255,255,0.75)",
-  textActive: "#ffffff",
-  border: "rgba(255,255,255,0.06)",
+  bg: "#111115",
+  bgLight: "#1a1a20",
+  accent: "#14a87a",
+  accentLight: "#5eead4",
+  accentGlow: "rgba(20,168,122,0.2)",
+  accentBg: "rgba(20,168,122,0.1)",
+  accentBadge: "rgba(20,168,122,0.15)",
+  textMuted: "rgba(255,255,255,0.2)",
+  textDefault: "rgba(255,255,255,0.35)",
+  textHover: "rgba(255,255,255,0.6)",
+  textActive: "#5eead4",
+  border: "rgba(255,255,255,0.05)",
 };
 
 const mainNav = [
@@ -130,7 +133,7 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
         }}
         onMouseEnter={(e) => {
           if (!active) {
-            e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.04)";
+            e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.03)";
             e.currentTarget.style.color = C.textHover;
           }
         }}
@@ -148,7 +151,7 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
             style={{
               marginRight: "auto",
               background: C.accentBadge,
-              color: C.accent,
+              color: C.accentLight,
               fontSize: 10,
               fontWeight: 600,
               padding: "1px 7px",
@@ -170,9 +173,10 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
       style={{
         width,
         background: C.bg,
-        boxShadow: "-4px 0 24px rgba(0,0,0,0.2)",
+        boxShadow: "-4px 0 24px rgba(0,0,0,0.3)",
         transition: "width 0.25s cubic-bezier(0.4,0,0.2,1)",
         overflow: "hidden",
+        borderLeft: `1px solid ${C.border}`,
       }}
     >
       {/* Brand */}
@@ -188,7 +192,7 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
         <div
           style={{
             width: 36, height: 36, borderRadius: 10,
-            background: `linear-gradient(135deg, ${C.accent}, #4f46e5)`,
+            background: `linear-gradient(135deg, ${C.accent}, #0d8c63)`,
             display: "flex", alignItems: "center", justifyContent: "center",
             boxShadow: `0 0 20px ${C.accentGlow}`,
             flexShrink: 0,
@@ -276,7 +280,7 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
         <div
           style={{
             width: 34, height: 34, borderRadius: "50%",
-            background: `linear-gradient(135deg, ${C.accent}, #4f46e5)`,
+            background: `linear-gradient(135deg, ${C.accent}, #0d8c63)`,
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 13, fontWeight: 600, color: "#fff",
             flexShrink: 0,
@@ -296,8 +300,11 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
 }
 
 export function Shell({ children }: { children: ReactNode }) {
+  const { token } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const sidebarWidth = collapsed ? SIDEBAR_NARROW : SIDEBAR_WIDE;
+
+  if (!token) return <PinScreen />;
 
   return (
     <div className="min-h-screen bg-base">
@@ -309,7 +316,6 @@ export function Shell({ children }: { children: ReactNode }) {
           transition: "margin-right 0.25s cubic-bezier(0.4,0,0.2,1)",
         }}
       >
-        {/* CSS media query for margin — inline style can't do md: breakpoint, so use a className trick */}
         <style>{`
           @media (min-width: 768px) {
             .shell-main { margin-right: ${sidebarWidth}px !important; }

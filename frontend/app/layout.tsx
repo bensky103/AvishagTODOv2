@@ -3,6 +3,7 @@ import { Secular_One, Heebo } from "next/font/google";
 import { Providers } from "./providers";
 import { ToastProvider } from "@/components/ui/Toast";
 import { Shell } from "@/components/layout/Shell";
+import { AuthProvider } from "@/lib/auth";
 import "./globals.css";
 
 const secularOne = Secular_One({
@@ -26,11 +27,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="he" dir="rtl" className={`${secularOne.variable} ${heebo.variable}`}>
       <body className="bg-base font-body">
-        <Providers>
-          <ToastProvider>
-            <Shell>{children}</Shell>
-          </ToastProvider>
-        </Providers>
+        <AuthProvider>
+          <Providers>
+            <ToastProvider>
+              <Shell>{children}</Shell>
+            </ToastProvider>
+          </Providers>
+        </AuthProvider>
       </body>
     </html>
   );

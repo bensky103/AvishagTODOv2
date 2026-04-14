@@ -21,18 +21,18 @@ export function FilterChips({
         const classes =
           variant === "header"
             ? active
-              ? "bg-white text-indigo-700 shadow-sm"
-              : "bg-white/15 text-white/90 hover:bg-white/25"
+              ? "bg-white/20 text-white shadow-sm"
+              : "bg-white/10 text-white/70 hover:bg-white/15"
             : active
               ? "text-white shadow-sm"
-              : "bg-gray-100 text-gray-600 hover:bg-gray-200";
+              : "bg-white/[0.04] text-gray-400 hover:bg-white/[0.08]";
 
         return (
           <button
             key={opt.value}
             onClick={() => onChange(opt.value)}
             className={`flex-shrink-0 rounded-lg px-4 py-1.5 text-sm font-medium transition-all duration-150 ${classes}`}
-            style={variant === "body" && active ? { background: "#6366f1" } : undefined}
+            style={variant === "body" && active ? { background: "#14a87a" } : undefined}
           >
             {opt.label}
           </button>

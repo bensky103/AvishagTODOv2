@@ -31,6 +31,7 @@ class IssueReportResponse(BaseModel):
     status: str
     created_at: datetime
     resolved_at: Optional[datetime]
+    updated_at: Optional[datetime]
     action_items: list[ActionItemResponse] = []
 
     model_config = {"from_attributes": True}

@@ -11,7 +11,7 @@ class IssueReport(Base):
     __tablename__ = "issue_reports"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    supplier_id: Mapped[int] = mapped_column(ForeignKey("suppliers.id"))
+    supplier_id: Mapped[int] = mapped_column(ForeignKey("suppliers.id", ondelete="RESTRICT"), index=True)
     product_name: Mapped[str] = mapped_column(String(255))
     sku: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     arrival_date: Mapped[date] = mapped_column(Date)
@@ -22,6 +22,7 @@ class IssueReport(Base):
     )
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True, onupdate=func.now())
 
     supplier: Mapped["Supplier"] = relationship(back_populates="issue_reports")
-    action_items: Mapped[list["ActionItem"]] = relationship(back_populates="issue_report")
+    action_items: Mapped[list["ActionItem"]] = relationship(back_populates="issue_report", cascade="all, delete-orphan")

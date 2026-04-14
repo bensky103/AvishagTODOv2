@@ -9,11 +9,11 @@ export function useTasks(filters?: Record<string, string>) {
   });
 }
 
-export function useTask(id: number) {
+export function useTask(id: number | null) {
   return useQuery({
     queryKey: ["tasks", id],
-    queryFn: () => api.get(id),
-    staleTime: 60 * 1000,
+    queryFn: () => api.get(id!),
+    enabled: id !== null && id > 0,
   });
 }
 
@@ -51,6 +51,17 @@ export function useUpdateTask() {
   });
 }
 
+export function useDeleteTask() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => api.delete(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}
+
 export function useToggleTask() {
   const qc = useQueryClient();
   return useMutation({
@@ -75,6 +86,7 @@ export function useToggleTask() {
     },
     onSettled: () => {
       qc.invalidateQueries({ queryKey: ["tasks"] });
+      qc.invalidateQueries({ queryKey: ["issues"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });

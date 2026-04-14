@@ -19,7 +19,7 @@ export function BottomNav() {
   }
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-50 bg-white/80 backdrop-blur-xl border-t border-gray-200/60 md:hidden">
+    <nav className="fixed bottom-0 inset-x-0 z-50 md:hidden" style={{ background: "rgba(17,17,21,0.9)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
       <div className="flex items-center justify-around h-16">
         {tabs.map((tab) => {
           const active = isActive(tab.href);
@@ -30,9 +30,9 @@ export function BottomNav() {
               className={`
                 flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 rounded-2xl
                 transition-all duration-200 text-xs font-medium
-                ${active ? "text-gray-400 hover:text-gray-600" : "text-gray-400 hover:text-gray-600"}
+                ${active ? "" : "text-gray-500 hover:text-gray-300"}
               `}
-              style={active ? { backgroundColor: "#eef2ff", color: "#6366f1" } : undefined}
+              style={active ? { backgroundColor: "rgba(20,168,122,0.12)", color: "#5eead4" } : undefined}
             >
               <span className="text-lg leading-none">{tab.icon}</span>
               <span>{tab.label}</span>

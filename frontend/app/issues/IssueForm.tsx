@@ -5,6 +5,8 @@ import { Modal } from "@/components/ui/Modal";
 import { useCreateIssue } from "@/lib/queries/issues";
 import { useSuppliers } from "@/lib/queries/suppliers";
 import { useToast } from "@/components/ui/Toast";
+import { DatePicker } from "@/components/ui/DatePicker";
+import { Select } from "@/components/ui/Select";
 
 interface IssueFormProps {
   isOpen: boolean;
@@ -55,7 +57,7 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
           toast("התקלה נוצרה בהצלחה", "success");
           onClose();
         },
-        onError: () => toast("שגיאה ביצירת התקלה", "error"),
+        onError: (err: Error) => toast(err.message || "שגיאה ביצירת התקלה", "error"),
       }
     );
   };
@@ -71,26 +73,20 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Supplier */}
         <div>
-          <label className="block text-sm font-body text-gray-600 mb-1">
+          <label className="block text-sm font-body text-text-secondary mb-1">
             ספק *
           </label>
-          <select
+          <Select
             value={supplierId}
-            onChange={(e) => setSupplierId(e.target.value)}
-            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-body text-gray-900 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-          >
-            <option value="">בחר ספק</option>
-            {suppliers?.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
+            onChange={(val) => setSupplierId(val)}
+            options={suppliers?.map((s) => ({ value: String(s.id), label: s.name })) || []}
+            placeholder="בחר ספק"
+          />
         </div>
 
         {/* Product Name */}
         <div>
-          <label className="block text-sm font-body text-gray-600 mb-1">
+          <label className="block text-sm font-body text-text-secondary mb-1">
             שם המוצר *
           </label>
           <input
@@ -98,13 +94,13 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
             value={productName}
             onChange={(e) => setProductName(e.target.value)}
             placeholder="שם המוצר"
-            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-body text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent"
           />
         </div>
 
         {/* SKU */}
         <div>
-          <label className="block text-sm font-body text-gray-600 mb-1">
+          <label className="block text-sm font-body text-text-secondary mb-1">
             מק״ט
           </label>
           <input
@@ -112,26 +108,25 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
             value={sku}
             onChange={(e) => setSku(e.target.value)}
             placeholder="מק״ט"
-            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-body text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent"
           />
         </div>
 
         {/* Arrival Date */}
         <div>
-          <label className="block text-sm font-body text-gray-600 mb-1">
+          <label className="block text-sm font-body text-text-secondary mb-1">
             תאריך הגעה *
           </label>
-          <input
-            type="date"
+          <DatePicker
             value={arrivalDate}
-            onChange={(e) => setArrivalDate(e.target.value)}
-            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-body text-gray-900 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+            onChange={(val) => setArrivalDate(val)}
+            placeholder="בחר תאריך הגעה"
           />
         </div>
 
         {/* Problem Description */}
         <div>
-          <label className="block text-sm font-body text-gray-600 mb-1">
+          <label className="block text-sm font-body text-text-secondary mb-1">
             תיאור הבעיה *
           </label>
           <textarea
@@ -139,7 +134,7 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
             onChange={(e) => setProblemDescription(e.target.value)}
             placeholder="תיאור הבעיה"
             rows={4}
-            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-body text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-y"
+            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent resize-y"
           />
         </div>
 
@@ -148,14 +143,14 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
           <button
             type="submit"
             disabled={!isValid || createIssue.isPending}
-            className="flex-1 bg-sky-500 hover:bg-sky-600 disabled:bg-gray-300 text-white font-body font-medium py-2.5 rounded-xl transition-colors text-sm"
+            className="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-700 disabled:text-gray-500 text-white font-body font-medium py-2.5 rounded-xl transition-colors text-sm"
           >
             {createIssue.isPending ? "יוצר..." : "יצירת תקלה"}
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-body font-medium rounded-xl transition-colors text-sm"
+            className="px-6 py-2.5 bg-white/[0.05] hover:bg-white/[0.08] text-text-secondary font-body font-medium rounded-xl transition-colors text-sm"
           >
             ביטול
           </button>

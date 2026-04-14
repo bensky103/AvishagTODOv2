@@ -15,5 +15,6 @@ class Supplier(Base):
     contact_info: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True, onupdate=func.now())
 
     issue_reports: Mapped[list["IssueReport"]] = relationship(back_populates="supplier")

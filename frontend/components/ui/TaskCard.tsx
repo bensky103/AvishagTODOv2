@@ -4,10 +4,10 @@ import type { Task } from "@/lib/types";
 import { Badge } from "./Badge";
 
 const urgencyBorderColors: Record<string, string> = {
-  critical: "border-r-red-400",
-  high: "border-r-amber-400",
-  medium: "border-r-indigo-400",
-  low: "border-r-gray-200",
+  critical: "border-r-red-500",
+  high: "border-r-amber-500",
+  medium: "border-r-teal-500",
+  low: "border-r-gray-600",
 };
 
 const urgencyLabels: Record<string, string> = {
@@ -34,8 +34,8 @@ export function TaskCard({ task, onClick, onToggle }: TaskCardProps) {
   return (
     <div
       className={`
-        bg-white rounded-xl border border-gray-100 shadow-card border-r-4 p-3.5 flex items-start gap-3
-        transition-all duration-200 hover:shadow-card-hover
+        bg-surface rounded-xl border border-white/[0.05] shadow-card border-r-4 p-3.5 flex items-start gap-3
+        transition-all duration-200 hover:shadow-card-hover hover:border-white/[0.08]
         ${urgencyBorderColors[task.urgency]}
         ${task.is_completed ? "opacity-50" : ""}
       `}
@@ -53,8 +53,8 @@ export function TaskCard({ task, onClick, onToggle }: TaskCardProps) {
           transition-all duration-150
           ${
             task.is_completed
-              ? "bg-indigo-500 border-indigo-500"
-              : "border-gray-300 hover:border-indigo-400"
+              ? "bg-emerald-500 border-emerald-500"
+              : "border-white/30 hover:border-emerald-400"
           }
         `}
       >
@@ -70,8 +70,8 @@ export function TaskCard({ task, onClick, onToggle }: TaskCardProps) {
         <p
           className={`text-sm font-medium leading-tight ${
             task.is_completed
-              ? "line-through text-gray-400"
-              : "text-gray-900"
+              ? "line-through text-text-secondary"
+              : "text-text-primary"
           }`}
         >
           {task.title}
@@ -81,7 +81,7 @@ export function TaskCard({ task, onClick, onToggle }: TaskCardProps) {
           {task.due_date && (
             <span
               className={`text-xs font-body ${
-                overdue ? "text-red-500 font-bold" : "text-text-secondary"
+                overdue ? "text-red-400 font-bold" : "text-text-secondary"
               }`}
             >
               {new Date(task.due_date).toLocaleDateString("he-IL")}

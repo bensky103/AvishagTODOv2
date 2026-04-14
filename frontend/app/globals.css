@@ -11,11 +11,14 @@ body {
   font-family: var(--font-heebo), sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: #151519;
+  color: #e2e2e8;
 }
 
-/* Smooth scrolling */
+/* Smooth scrolling + 10% scale-up */
 html {
   scroll-behavior: smooth;
+  font-size: 110%;
 }
 
 /* Bottom sheet animation */
@@ -37,17 +40,7 @@ html {
   }
 }
 
-@keyframes slide-in-from-bottom {
-  from {
-    transform: translateY(8px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
+/* Utility classes referenced from Tailwind config */
 .animate-slide-up {
   animation: slide-up 0.3s ease-out;
 }
@@ -56,17 +49,7 @@ html {
   animation: fade-in 0.2s ease-out;
 }
 
-.animate-slide-in {
-  animation: slide-in-from-bottom 0.3s ease-out;
-}
-
-/* Staggered entry animations for cards */
-.stagger-1 { animation-delay: 0.05s; }
-.stagger-2 { animation-delay: 0.1s; }
-.stagger-3 { animation-delay: 0.15s; }
-.stagger-4 { animation-delay: 0.2s; }
-
-/* Custom scrollbar */
+/* Custom scrollbar — dark theme */
 ::-webkit-scrollbar {
   width: 5px;
 }
@@ -76,12 +59,12 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* Hide scrollbar for filter chips */
@@ -93,26 +76,3 @@ html {
   scrollbar-width: none;
 }
 
-/* Glass effect for cards */
-.glass {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-/* Subtle noise texture overlay */
-.texture-noise::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: 0.025;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  pointer-events: none;
-  border-radius: inherit;
-}
-
-/* Dot pattern for empty states */
-.pattern-dots {
-  background-image: radial-gradient(circle, #d1d5db 1px, transparent 1px);
-  background-size: 20px 20px;
-}

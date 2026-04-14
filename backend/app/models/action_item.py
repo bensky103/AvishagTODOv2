@@ -11,8 +11,8 @@ class ActionItem(Base):
     __tablename__ = "action_items"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    issue_report_id: Mapped[int] = mapped_column(ForeignKey("issue_reports.id"))
-    task_id: Mapped[Optional[int]] = mapped_column(ForeignKey("tasks.id"), nullable=True)
+    issue_report_id: Mapped[int] = mapped_column(ForeignKey("issue_reports.id", ondelete="CASCADE"), index=True)
+    task_id: Mapped[Optional[int]] = mapped_column(ForeignKey("tasks.id", ondelete="SET NULL"), nullable=True, index=True)
     description: Mapped[str] = mapped_column(Text)
     is_completed: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())

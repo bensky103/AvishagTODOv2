@@ -10,9 +10,9 @@ interface KpiCardProps {
 }
 
 const variantAccent: Record<string, string> = {
-  default: "#6366f1",
+  default: "#14a87a",
   danger: "#ef4444",
-  success: "#10b981",
+  success: "#14a87a",
   warning: "#f59e0b",
 };
 
@@ -21,20 +21,20 @@ export function KpiCard({ value, label, variant = "default", href, icon }: KpiCa
 
   const content = (
     <div
-      className="bg-white rounded-xl shadow-card hover:shadow-card-hover transition-all duration-200 p-5 flex items-center gap-4"
-      style={{ borderRight: `4px solid ${accent}` }}
+      className="bg-surface rounded-xl shadow-card hover:shadow-card-hover transition-all duration-200 p-5 flex items-center gap-4 border border-white/[0.05]"
+      style={{ borderRight: `3px solid ${accent}` }}
     >
       {icon && (
         <div
           className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ backgroundColor: `${accent}12`, color: accent }}
+          style={{ backgroundColor: `${accent}18`, color: accent }}
         >
           {icon}
         </div>
       )}
       <div className="min-w-0">
-        <p className="text-2xl font-bold font-heading text-gray-900">{value}</p>
-        <p className="text-xs font-body text-gray-500 mt-0.5 font-medium">{label}</p>
+        <p className="text-2xl font-bold font-heading text-white">{value}</p>
+        <p className="text-xs font-body text-text-secondary mt-0.5 font-medium">{label}</p>
       </div>
     </div>
   );
