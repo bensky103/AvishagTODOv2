@@ -15,7 +15,14 @@ async def create_supplier(
     contact_info: Optional[str] = None,
     notes: Optional[str] = None,
 ) -> Supplier:
-    supplier = Supplier(name=name, contact_info=contact_info, notes=notes)
+    # Check for duplicate by name (case-insensitive)
+    existing = (await session.execute(
+        select(Supplier).where(func.lower(Supplier.name) == name.strip().lower())
+    )).scalar_one_or_none()
+    if existing:
+        raise ValueError("ספק כבר קיים במערכת")
+
+    supplier = Supplier(name=name.strip(), contact_info=contact_info, notes=notes)
     session.add(supplier)
     await session.commit()
     await session.refresh(supplier)
@@ -49,13 +56,16 @@ async def delete_supplier(session: AsyncSession, supplier_id: int) -> None:
     supplier = await session.get(Supplier, supplier_id)
     if not supplier:
         raise ValueError(f"Supplier {supplier_id} not found")
-    # Check for linked issues (RESTRICT)
+    # Only block deletion if there are unresolved issues
     from app.models.issue_report import IssueReport
-    count = (await session.execute(
-        select(func.count()).where(IssueReport.supplier_id == supplier_id)
+    unresolved_count = (await session.execute(
+        select(func.count()).where(
+            IssueReport.supplier_id == supplier_id,
+            IssueReport.status != "resolved",
+        )
     )).scalar()
-    if count > 0:
-        raise ValueError(f"Cannot delete supplier with {count} linked issue(s)")
+    if unresolved_count > 0:
+        raise ValueError(f"לא ניתן למחוק ספק עם {unresolved_count} תקלות פתוחות")
     await session.delete(supplier)
     await session.commit()
     logger.info("supplier_deleted", supplier_id=supplier_id)

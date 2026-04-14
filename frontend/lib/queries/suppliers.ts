@@ -21,7 +21,7 @@ export function useDeleteSupplier() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => api.delete(id),
-    onSuccess: () => {
+    onSettled: () => {
       qc.invalidateQueries({ queryKey: ["suppliers"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
     },

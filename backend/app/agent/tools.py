@@ -15,14 +15,22 @@ def get_agent_tools(session: AsyncSession) -> list:
         title: str,
         description: str = "",
         due_date: str = "",
-        urgency: str = "medium",
+        urgency: str = "",
     ) -> str:
-        """Create a new task. urgency must be one of: low, medium, high, critical. due_date format: YYYY-MM-DD."""
+        """Create a new task. All parameters must be provided by the user - do NOT assume or guess values.
+        title: required. description: optional. due_date: YYYY-MM-DD format, ask user if not specified.
+        urgency: must be one of low/medium/high/critical, ask user if not specified."""
+        if not title.strip():
+            return "Error: title is required. Ask the user for a task title."
+        if not urgency:
+            return "Error: urgency was not specified. Ask the user to choose: low, medium, high, or critical."
+        if urgency not in ("low", "medium", "high", "critical"):
+            return f"Error: invalid urgency '{urgency}'. Must be one of: low, medium, high, critical."
         parsed_date = None
         if due_date:
             parsed_date = date.fromisoformat(due_date)
         t = await task_service.create_task(
-            session, title=title, description=description or None,
+            session, title=title.strip(), description=description or None,
             due_date=parsed_date, urgency=urgency,
         )
         return f"Task created: id={t.id}, title='{t.title}', urgency={t.urgency}, due={t.due_date}"
@@ -71,6 +79,44 @@ def get_agent_tools(session: AsyncSession) -> list:
         return "\n".join(lines)
 
     @tool
+    async def update_supplier(supplier_name: str, new_name: str = "", new_contact_info: str = "") -> str:
+        """Update an existing supplier's details. supplier_name is matched fuzzily. Provide new_name and/or new_contact_info to update."""
+        if not new_name and not new_contact_info:
+            return "Error: provide at least one field to update (new_name or new_contact_info)."
+        suppliers = await supplier_service.list_suppliers(session)
+        matched = None
+        for s in suppliers:
+            if supplier_name in s.name or s.name in supplier_name:
+                matched = s
+                break
+        if not matched:
+            return f"Supplier '{supplier_name}' not found. Available: {', '.join(s.name for s in suppliers)}"
+        kwargs = {}
+        if new_name:
+            kwargs["name"] = new_name
+        if new_contact_info:
+            kwargs["contact_info"] = new_contact_info
+        updated = await supplier_service.update_supplier(session, matched.id, **kwargs)
+        return f"Supplier updated: id={updated.id}, name='{updated.name}', contact='{updated.contact_info or 'N/A'}'"
+
+    @tool
+    async def delete_supplier(supplier_name: str) -> str:
+        """Delete a supplier by name. supplier_name is matched fuzzily. Will fail if the supplier has unresolved issues."""
+        suppliers = await supplier_service.list_suppliers(session)
+        matched = None
+        for s in suppliers:
+            if supplier_name in s.name or s.name in supplier_name:
+                matched = s
+                break
+        if not matched:
+            return f"Supplier '{supplier_name}' not found. Available: {', '.join(s.name for s in suppliers)}"
+        try:
+            await supplier_service.delete_supplier(session, matched.id)
+            return f"Supplier '{matched.name}' (id={matched.id}) deleted successfully."
+        except ValueError as e:
+            return f"Error: {e}"
+
+    @tool
     async def create_issue_report(
         supplier_name: str,
         product_name: str,
@@ -78,7 +124,19 @@ def get_agent_tools(session: AsyncSession) -> list:
         arrival_date: str = "",
         sku: str = "",
     ) -> str:
-        """Create an issue report for a supplier problem. supplier_name is matched fuzzily against existing suppliers. arrival_date format: YYYY-MM-DD (defaults to today)."""
+        """Create an issue report for a supplier problem. All required fields must be provided by the user - do NOT assume or guess values.
+        supplier_name: required, matched fuzzily against existing suppliers.
+        product_name: required - the name of the problematic product. Ask the user if not specified.
+        problem_description: required.
+        arrival_date: YYYY-MM-DD format, defaults to today if user doesn't specify.
+        sku: optional."""
+        if not supplier_name.strip():
+            return "Error: supplier_name is required. Ask the user which supplier this issue is for."
+        if not product_name.strip():
+            return "Error: product_name is required. Ask the user for the product name (שם המוצר)."
+        if not problem_description.strip():
+            return "Error: problem_description is required. Ask the user to describe the problem."
+
         suppliers = await supplier_service.list_suppliers(session)
         matched = None
         for s in suppliers:
@@ -90,9 +148,9 @@ def get_agent_tools(session: AsyncSession) -> list:
 
         parsed_date = date.fromisoformat(arrival_date) if arrival_date else date.today()
         issue = await issue_service.create_issue_report(
-            session, supplier_id=matched.id, product_name=product_name,
+            session, supplier_id=matched.id, product_name=product_name.strip(),
             sku=sku or None, arrival_date=parsed_date,
-            problem_description=problem_description,
+            problem_description=problem_description.strip(),
         )
         return f"Issue report created: id={issue.id}, supplier='{matched.name}', product='{product_name}', status={issue.status}"
 
@@ -144,7 +202,7 @@ def get_agent_tools(session: AsyncSession) -> list:
 
     return [
         create_task, list_tasks, complete_task,
-        create_supplier, list_suppliers,
+        create_supplier, list_suppliers, update_supplier, delete_supplier,
         create_issue_report, list_issues,
         add_action_item, resolve_issue,
     ]

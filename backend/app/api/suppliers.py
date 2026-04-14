@@ -10,9 +10,12 @@ router = APIRouter()
 
 @router.post("/", response_model=SupplierResponse, status_code=201)
 async def create_supplier(data: SupplierCreate, session: AsyncSession = Depends(get_session)):
-    return await supplier_service.create_supplier(
-        session, name=data.name, contact_info=data.contact_info, notes=data.notes,
-    )
+    try:
+        return await supplier_service.create_supplier(
+            session, name=data.name, contact_info=data.contact_info, notes=data.notes,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
 
 
 @router.get("/", response_model=list[SupplierResponse])

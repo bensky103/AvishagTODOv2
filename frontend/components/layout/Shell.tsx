@@ -262,7 +262,7 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
       >
         <svg
           width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-          style={{ transform: collapsed ? "scaleX(-1)" : undefined, transition: "transform 0.25s" }}
+          style={{ transform: collapsed ? undefined : "scaleX(-1)", transition: "transform 0.25s" }}
         >
           <polyline points="15 18 9 12 15 6" />
         </svg>

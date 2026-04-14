@@ -55,7 +55,7 @@ export function useDeleteTask() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => api.delete(id),
-    onSuccess: () => {
+    onSettled: () => {
       qc.invalidateQueries({ queryKey: ["tasks"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
     },
@@ -68,21 +68,31 @@ export function useToggleTask() {
     mutationFn: (task: Task) =>
       task.is_completed ? api.reopen(task.id) : api.complete(task.id),
     onMutate: async (task) => {
-      await qc.cancelQueries({ queryKey: ["tasks", task.id] });
-      const prev = qc.getQueryData<Task>(["tasks", task.id]);
+      // Cancel ALL task queries to prevent in-flight refetches from overwriting optimistic data
+      await qc.cancelQueries({ queryKey: ["tasks"] });
+
+      const prevTask = qc.getQueryData<Task>(["tasks", task.id]);
+      const prevLists = qc.getQueriesData<Task[]>({ queryKey: ["tasks"] });
+
       qc.setQueryData(["tasks", task.id], {
         ...task,
         is_completed: !task.is_completed,
       });
       qc.setQueriesData<Task[]>({ queryKey: ["tasks"] }, (old) =>
-        old?.map((t) =>
-          t.id === task.id ? { ...t, is_completed: !t.is_completed } : t
-        )
+        Array.isArray(old)
+          ? old.map((t) =>
+              t.id === task.id ? { ...t, is_completed: !t.is_completed } : t
+            )
+          : old
       );
-      return { prev };
+      return { prevTask, prevLists };
     },
     onError: (_err, task, context) => {
-      if (context?.prev) qc.setQueryData(["tasks", task.id], context.prev);
+      if (context?.prevTask) qc.setQueryData(["tasks", task.id], context.prevTask);
+      // Rollback all list queries
+      context?.prevLists?.forEach(([key, data]) => {
+        if (data) qc.setQueryData(key, data);
+      });
     },
     onSettled: () => {
       qc.invalidateQueries({ queryKey: ["tasks"] });

@@ -1,6 +1,6 @@
 import structlog
 from telegram import Update
-from telegram.ext import Application, MessageHandler, filters, ContextTypes
+from telegram.ext import Application, MessageHandler, CommandHandler, filters, ContextTypes
 
 from app.config import settings
 from app.database import async_session
@@ -10,6 +10,50 @@ logger = structlog.get_logger("telegram")
 
 
 MAX_HISTORY_MESSAGES = 20
+
+HELP_TEXT = """🤖 *אבישג \- עוזרת ניהול רכש*
+
+הנה מה שאני יכולה לעשות:
+
+📋 *משימות*
+• יצירת משימה חדשה
+• הצגת רשימת משימות \(פתוחות/סגורות\)
+• סימון משימה כהושלמה
+
+🏢 *ספקים*
+• יצירת ספק חדש
+• הצגת רשימת ספקים
+• עדכון פרטי ספק
+• מחיקת ספק
+
+⚠️ *תקלות*
+• פתיחת תקלה חדשה על ספק
+• הצגת רשימת תקלות
+• הוספת פעולות נדרשות לתקלה
+• סימון תקלה כפתורה
+
+💡 *טיפים*
+• אפשר לכתוב בעברית או באנגלית
+• אפשר לבקש כמה פעולות בהודעה אחת
+• אני מזהה שמות ספקים גם אם כתבת חלקית
+"""
+
+
+async def handle_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handle /help command."""
+    if update.effective_user.id != settings.telegram_allowed_user_id:
+        return
+    await update.message.reply_text(HELP_TEXT, parse_mode="MarkdownV2")
+
+
+async def handle_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handle /start command."""
+    if update.effective_user.id != settings.telegram_allowed_user_id:
+        return
+    await update.message.reply_text(
+        "שלום! 👋 אני אבישג, עוזרת ניהול הרכש שלך\\.\nשלחי /help כדי לראות את כל מה שאני יכולה לעשות\\.",
+        parse_mode="MarkdownV2",
+    )
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -57,6 +101,8 @@ def create_bot_application() -> Application:
 async def start_bot() -> Application:
     """Initialize and start the Telegram bot polling."""
     application = create_bot_application()
+    application.add_handler(CommandHandler("help", handle_help))
+    application.add_handler(CommandHandler("start", handle_start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     await application.initialize()
     await application.start()

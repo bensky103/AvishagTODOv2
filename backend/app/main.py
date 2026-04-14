@@ -7,6 +7,9 @@ from fastapi.responses import JSONResponse
 from app.api import tasks, suppliers, issues
 from app.auth import AuthMiddleware, verify_pin
 from app.config import settings
+from app.logging_config import setup_logging
+
+setup_logging()
 
 logger = structlog.get_logger("app")
 

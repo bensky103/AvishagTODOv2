@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Modal } from "@/components/ui/Modal";
-import { useCreateIssue } from "@/lib/queries/issues";
+import { useCreateIssue, useAddActionItem } from "@/lib/queries/issues";
 import { useSuppliers } from "@/lib/queries/suppliers";
 import { useToast } from "@/components/ui/Toast";
 import { DatePicker } from "@/components/ui/DatePicker";
@@ -13,15 +13,24 @@ interface IssueFormProps {
   onClose: () => void;
 }
 
+interface PendingAction {
+  description: string;
+  createTask: boolean;
+}
+
 export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
   const [supplierId, setSupplierId] = useState("");
   const [productName, setProductName] = useState("");
   const [sku, setSku] = useState("");
   const [arrivalDate, setArrivalDate] = useState("");
   const [problemDescription, setProblemDescription] = useState("");
+  const [actions, setActions] = useState<PendingAction[]>([]);
+  const [newActionDesc, setNewActionDesc] = useState("");
+  const [newActionCreateTask, setNewActionCreateTask] = useState(false);
 
   const { data: suppliers } = useSuppliers();
   const createIssue = useCreateIssue();
+  const addActionItem = useAddActionItem();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -31,8 +40,22 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
       setSku("");
       setArrivalDate("");
       setProblemDescription("");
+      setActions([]);
+      setNewActionDesc("");
+      setNewActionCreateTask(false);
     }
   }, [isOpen]);
+
+  const addAction = () => {
+    if (!newActionDesc.trim()) return;
+    setActions([...actions, { description: newActionDesc.trim(), createTask: newActionCreateTask }]);
+    setNewActionDesc("");
+    setNewActionCreateTask(false);
+  };
+
+  const removeAction = (index: number) => {
+    setActions(actions.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,9 +76,28 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
         problem_description: problemDescription.trim(),
       },
       {
-        onSuccess: () => {
-          toast("התקלה נוצרה בהצלחה", "success");
-          onClose();
+        onSuccess: (issue) => {
+          // Create action items sequentially after issue creation
+          if (actions.length > 0) {
+            let completed = 0;
+            actions.forEach((action) => {
+              addActionItem.mutate(
+                { issueId: issue.id, data: { description: action.description, create_task: action.createTask } },
+                {
+                  onSettled: () => {
+                    completed++;
+                    if (completed === actions.length) {
+                      toast("התקלה נוצרה בהצלחה", "success");
+                      onClose();
+                    }
+                  },
+                }
+              );
+            });
+          } else {
+            toast("התקלה נוצרה בהצלחה", "success");
+            onClose();
+          }
         },
         onError: (err: Error) => toast(err.message || "שגיאה ביצירת התקלה", "error"),
       }
@@ -136,6 +178,70 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
             rows={4}
             className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent resize-y"
           />
+        </div>
+
+        {/* Action Items */}
+        <div>
+          <label className="block text-sm font-body text-text-secondary mb-1">
+            פעולות נדרשות
+          </label>
+
+          {/* Added actions list */}
+          {actions.length > 0 && (
+            <div className="space-y-1.5 mb-2">
+              {actions.map((action, i) => (
+                <div key={i} className="flex items-center gap-2 bg-white/[0.03] rounded-lg px-3 py-2 text-sm">
+                  <span className="flex-1 text-text-primary font-body">{action.description}</span>
+                  {action.createTask && (
+                    <span className="text-[10px] font-body bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full">
+                      משימה
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeAction(i)}
+                    className="text-red-400/60 hover:text-red-400 transition-colors"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Add new action */}
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={newActionDesc}
+              onChange={(e) => setNewActionDesc(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addAction(); } }}
+              placeholder="תיאור הפעולה"
+              className="flex-1 bg-surface-raised border border-white/[0.06] rounded-xl px-3 py-2 text-sm font-body text-text-primary placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent"
+            />
+            <button
+              type="button"
+              onClick={addAction}
+              disabled={!newActionDesc.trim()}
+              className="px-3 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 disabled:opacity-30 text-emerald-400 font-body text-sm rounded-xl transition-colors"
+            >
+              +
+            </button>
+          </div>
+
+          {/* Create linked task toggle */}
+          <label className="flex items-center gap-2 mt-1.5 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={newActionCreateTask}
+              onChange={(e) => setNewActionCreateTask(e.target.checked)}
+              className="accent-emerald-500 w-3.5 h-3.5"
+            />
+            <span className="text-xs font-body text-text-secondary">צור משימה מקושרת</span>
+          </label>
         </div>
 
         {/* Actions */}

@@ -21,7 +21,7 @@ export function useDeleteIssue() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => api.delete(id),
-    onSuccess: () => {
+    onSettled: () => {
       qc.invalidateQueries({ queryKey: ["issues"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
     },
