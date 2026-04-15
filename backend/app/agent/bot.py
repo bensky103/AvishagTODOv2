@@ -1,3 +1,4 @@
+import html
 import re
 
 import structlog
@@ -18,9 +19,10 @@ MAX_HISTORY_TOKENS_ESTIMATE = 3000  # rough char-based estimate (1 token ≈ 4 c
 _BOLD_RE = re.compile(r"\*\*(.+?)\*\*")
 
 
-def _strip_markdown_bold(text: str) -> str:
-    """Convert **bold** markdown to plain text for Telegram."""
-    return _BOLD_RE.sub(r"\1", text)
+def _markdown_to_html(text: str) -> str:
+    """Convert **bold** markdown to HTML <b> tags for Telegram HTML parse mode."""
+    text = html.escape(text)
+    return _BOLD_RE.sub(r"<b>\1</b>", text)
 
 HELP_TEXT = r"""🤖 *בוטי \- עוזר ניהול רכש*
 
@@ -111,9 +113,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             # Trim to keep context window manageable
             _trim_history(history)
 
-            # Strip markdown bold (**text**) since Telegram plain text doesn't render it
-            clean_response = _strip_markdown_bold(response)
-            await update.message.reply_text(clean_response)
+            html_response = _markdown_to_html(response)
+            await update.message.reply_text(html_response, parse_mode="HTML")
             logger.info("response_sent", length=len(response))
         except Exception as e:
             logger.error("agent_error", error=str(e))
