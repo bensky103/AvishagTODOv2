@@ -2,10 +2,10 @@
 set -e
 
 # Railway provides $PORT; default to 80 for local use
-export NGINX_PORT="${PORT:-80}"
+NGINX_PORT="${PORT:-80}"
 
 # Generate nginx config from template with the correct port
-envsubst '${NGINX_PORT}' < /etc/nginx/nginx-site.conf.template > /etc/nginx/sites-enabled/default
+sed "s/\${NGINX_PORT}/$NGINX_PORT/g" /etc/nginx/nginx-site.conf.template > /etc/nginx/sites-enabled/default
 
 cd /app/backend
 

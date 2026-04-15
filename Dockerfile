@@ -11,7 +11,7 @@ RUN npm run build
 FROM python:3.12-slim
 
 # Install nginx
-RUN apt-get update && apt-get install -y --no-install-recommends nginx && \
+RUN apt-get update && apt-get install -y --no-install-recommends nginx gettext-base && \
     rm -rf /var/lib/apt/lists/*
 
 # ---- Python backend ----
