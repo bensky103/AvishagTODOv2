@@ -53,6 +53,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push("/login");
   }, [router]);
 
+  useEffect(() => {
+    if (!loading && !authenticated) {
+      const path = window.location.pathname;
+      if (path !== "/login" && path !== "/login.html") {
+        router.replace("/login");
+      }
+    }
+  }, [loading, authenticated, router]);
+
   if (loading) return null;
 
   return (
