@@ -4,6 +4,7 @@ from typing import Optional
 from langchain_core.tools import tool
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.task import Task
 from app.services import task_service, supplier_service, issue_service
 
 
@@ -57,11 +58,45 @@ def get_agent_tools(session: AsyncSession) -> list:
             lines.append(f"{status_mark} [{t.id}] {t.title} (urgency={t.urgency}, due={t.due_date})")
         return "\n".join(lines)
 
+    async def _resolve_task(task_id: int = 0, task_name: str = "") -> Task | str:
+        """Find a task by ID or fuzzy name match. Returns the Task or an error string."""
+        if task_id:
+            task = await task_service.get_task(session, task_id)
+            if not task:
+                return f"Error: Task with id {task_id} not found."
+            return task
+        if task_name:
+            tasks = await task_service.list_tasks(session)
+            for t in tasks:
+                if task_name in t.title or t.title in task_name:
+                    return t
+            available = ", ".join(f"[{t.id}] {t.title}" for t in tasks[:10])
+            return f"Error: Task '{task_name}' not found. Available tasks: {available}"
+        return "Error: provide either task_id or task_name."
+
     @tool
-    async def complete_task(task_id: int) -> str:
-        """Mark a task as completed."""
-        t = await task_service.complete_task(session, task_id)
-        return f"Task {t.id} '{t.title}' marked as completed."
+    async def complete_task(task_id: int = 0, task_name: str = "") -> str:
+        """Mark a task as completed. Provide task_id (numeric) OR task_name (fuzzy matched) to identify the task."""
+        result = await _resolve_task(task_id, task_name)
+        if isinstance(result, str):
+            return result
+        try:
+            t = await task_service.complete_task(session, result.id)
+            return f"Task {t.id} '{t.title}' marked as completed."
+        except ValueError as e:
+            return f"Error: {e}"
+
+    @tool
+    async def reopen_task(task_id: int = 0, task_name: str = "") -> str:
+        """Reopen a completed task, marking it as not completed. Provide task_id (numeric) OR task_name (fuzzy matched) to identify the task."""
+        result = await _resolve_task(task_id, task_name)
+        if isinstance(result, str):
+            return result
+        try:
+            t = await task_service.reopen_task(session, result.id)
+            return f"Task {t.id} '{t.title}' reopened successfully."
+        except ValueError as e:
+            return f"Error: {e}"
 
     @tool
     async def create_supplier(name: str, contact_info: str = "") -> str:
@@ -100,8 +135,10 @@ def get_agent_tools(session: AsyncSession) -> list:
         return f"Supplier updated: id={updated.id}, name='{updated.name}', contact='{updated.contact_info or 'N/A'}'"
 
     @tool
-    async def delete_supplier(supplier_name: str) -> str:
-        """Delete a supplier by name. supplier_name is matched fuzzily. Will fail if the supplier has unresolved issues."""
+    async def delete_supplier(supplier_name: str, confirmed: bool = False) -> str:
+        """Delete a supplier by name. supplier_name is matched fuzzily.
+        If the supplier has unresolved issues, returns the list of issues so you can show them to the user.
+        If the supplier has NO issues, you must first ask the user for confirmation, then call again with confirmed=True."""
         suppliers = await supplier_service.list_suppliers(session)
         matched = None
         for s in suppliers:
@@ -110,6 +147,27 @@ def get_agent_tools(session: AsyncSession) -> list:
                 break
         if not matched:
             return f"Supplier '{supplier_name}' not found. Available: {', '.join(s.name for s in suppliers)}"
+
+        # Check for unresolved issues and list them
+        from app.models.issue_report import IssueReport
+        from sqlalchemy import select
+        unresolved = (await session.execute(
+            select(IssueReport).where(
+                IssueReport.supplier_id == matched.id,
+                IssueReport.status != "resolved",
+            )
+        )).scalars().all()
+        if unresolved:
+            lines = [f"- [{i.id}] {i.product_name}: {i.problem_description} (status={i.status})" for i in unresolved]
+            return (
+                f"Cannot delete supplier '{matched.name}' — has {len(unresolved)} open issue(s):\n"
+                + "\n".join(lines)
+                + "\nAsk the user to resolve these issues first before deleting."
+            )
+
+        if not confirmed:
+            return f"Supplier '{matched.name}' (id={matched.id}) has no open issues. Ask the user to confirm deletion, then call delete_supplier again with confirmed=True."
+
         try:
             await supplier_service.delete_supplier(session, matched.id)
             return f"Supplier '{matched.name}' (id={matched.id}) deleted successfully."
@@ -157,9 +215,11 @@ def get_agent_tools(session: AsyncSession) -> list:
     @tool
     async def list_issues(supplier_name: str = "", status: str = "") -> str:
         """List issue reports with optional filters. status: open/in_progress/resolved."""
+        suppliers = await supplier_service.list_suppliers(session)
+        supplier_names = {s.id: s.name for s in suppliers}
+
         supplier_id = None
         if supplier_name:
-            suppliers = await supplier_service.list_suppliers(session)
             for s in suppliers:
                 if supplier_name in s.name or s.name in supplier_name:
                     supplier_id = s.id
@@ -174,8 +234,9 @@ def get_agent_tools(session: AsyncSession) -> list:
         for i in issues:
             action_count = len(i.action_items) if i.action_items else 0
             done_count = sum(1 for a in i.action_items if a.is_completed) if i.action_items else 0
+            s_name = supplier_names.get(i.supplier_id, f"unknown({i.supplier_id})")
             lines.append(
-                f"[{i.id}] {i.product_name} (supplier_id={i.supplier_id}, status={i.status}, "
+                f"[{i.id}] {i.product_name} (supplier={s_name}, status={i.status}, "
                 f"actions={done_count}/{action_count}, date={i.arrival_date})"
             )
         return "\n".join(lines)
@@ -195,14 +256,46 @@ def get_agent_tools(session: AsyncSession) -> list:
         return f"Action item created: id={action.id}, description='{description}'{task_info}"
 
     @tool
+    async def list_action_items(issue_report_id: int = 0, issue_name: str = "") -> str:
+        """List the action items (פעולות) of a specific issue report.
+        Provide issue_report_id (numeric) OR issue_name (fuzzy matched against product_name) to identify the issue."""
+        if not issue_report_id and not issue_name:
+            return "Error: provide either issue_report_id or issue_name to identify the issue."
+
+        if issue_report_id:
+            issue = await issue_service.get_issue_report(session, issue_report_id)
+            if not issue:
+                return f"Error: Issue with id {issue_report_id} not found."
+        else:
+            issues = await issue_service.list_issue_reports(session)
+            issue = None
+            for i in issues:
+                if issue_name in i.product_name or i.product_name in issue_name:
+                    issue = i
+                    break
+            if not issue:
+                available = ", ".join(f"[{i.id}] {i.product_name}" for i in issues[:10])
+                return f"Error: Issue '{issue_name}' not found. Available issues: {available}"
+
+        if not issue.action_items:
+            return f"Issue [{issue.id}] '{issue.product_name}' has no action items yet."
+
+        lines = [f"Action items for issue [{issue.id}] '{issue.product_name}':"]
+        for a in issue.action_items:
+            status_mark = "\u2705" if a.is_completed else "\u2b1c"
+            task_info = f" (linked task #{a.task_id})" if a.task_id else ""
+            lines.append(f"{status_mark} [{a.id}] {a.description}{task_info}")
+        return "\n".join(lines)
+
+    @tool
     async def resolve_issue(issue_report_id: int) -> str:
         """Mark an issue report as resolved."""
         issue = await issue_service.resolve_issue_report(session, issue_report_id)
         return f"Issue {issue.id} marked as resolved."
 
     return [
-        create_task, list_tasks, complete_task,
+        create_task, list_tasks, complete_task, reopen_task,
         create_supplier, list_suppliers, update_supplier, delete_supplier,
-        create_issue_report, list_issues,
+        create_issue_report, list_issues, list_action_items,
         add_action_item, resolve_issue,
     ]

@@ -40,7 +40,7 @@ export function Select({ value, onChange, options, placeholder = "בחר...", cl
         onClick={() => setOpen(!open)}
         className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-right focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent flex items-center justify-between"
       >
-        <span className={selected ? "text-text-primary" : "text-gray-500"}>
+        <span className={selected ? "text-text-primary" : "text-gray-300"}>
           {selected?.label || placeholder}
         </span>
         <svg

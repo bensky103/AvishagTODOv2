@@ -8,11 +8,40 @@ import structlog
 LOGS_DIR = Path(__file__).resolve().parent.parent / "logs"
 
 
+class _PlainFileRenderer:
+    """Render structlog events as: TIMESTAMP | LEVEL | file:func.event | extras"""
+
+    _APP_ROOT = str(Path(__file__).resolve().parent.parent) + os.sep
+
+    def __call__(self, logger, method_name, event_dict):
+        ts = event_dict.pop("timestamp", "")
+        level = event_dict.pop("level", method_name).upper()
+        name = event_dict.pop("logger", "")
+        event = event_dict.pop("event", "")
+
+        # Extract relative file path and function name from the stdlib LogRecord
+        record = event_dict.pop("_record", None)
+        file_loc = ""
+        if record:
+            path = record.pathname.replace(self._APP_ROOT, "")
+            file_loc = f"{path}:{record.funcName}"
+
+        # Drop internal structlog keys
+        for key in ("_from_structlog",):
+            event_dict.pop(key, None)
+
+        source = f"{file_loc}.{event}" if file_loc else (f"{name}.{event}" if name and event else name or event)
+        extras = " ".join(f"{k}={v}" for k, v in event_dict.items()) if event_dict else ""
+        if extras:
+            return f"{ts} | {level} | {source} | {extras}"
+        return f"{ts} | {level} | {source}"
+
+
 def setup_logging() -> None:
     """Configure structured logging with file rotation and filtered console output."""
     LOGS_DIR.mkdir(exist_ok=True)
 
-    # File handler — all app logs with rotation (5MB, keep 5 files)
+    # File handler — plain text, no ANSI colors, rotation (5MB, keep 5 files)
     file_handler = logging.handlers.RotatingFileHandler(
         LOGS_DIR / "app.log",
         maxBytes=5 * 1024 * 1024,
@@ -22,7 +51,7 @@ def setup_logging() -> None:
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(logging.Formatter("%(message)s"))
 
-    # Console handler — only warnings+ from app, suppress noisy libraries
+    # Console handler — colored output for terminal
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(logging.Formatter("%(message)s"))
@@ -36,13 +65,36 @@ def setup_logging() -> None:
     # Suppress noisy third-party loggers
     for noisy in ("uvicorn.access", "uvicorn.error", "httpcore", "httpx",
                    "sqlalchemy.engine", "aiosqlite", "watchfiles",
-                   "telegram.ext", "hpack", "urllib3"):
+                   "telegram.ext", "hpack", "urllib3",
+                   "apscheduler", "openai", "openai._base_client"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
 
     # Keep uvicorn startup messages visible
     logging.getLogger("uvicorn").setLevel(logging.INFO)
 
-    # Configure structlog
+    # Shared processors (before forking to file vs console)
+    shared_processors = [
+        structlog.contextvars.merge_contextvars,
+        structlog.stdlib.add_log_level,
+        structlog.stdlib.add_logger_name,
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
+        structlog.processors.UnicodeDecoder(),
+    ]
+
+    # Use foreign_pre_chain so stdlib log records also get processed
+    formatter_file = structlog.stdlib.ProcessorFormatter(
+        processors=[*shared_processors, _PlainFileRenderer()],
+    )
+    formatter_console = structlog.stdlib.ProcessorFormatter(
+        processors=[*shared_processors, structlog.dev.ConsoleRenderer()],
+    )
+
+    file_handler.setFormatter(formatter_file)
+    console_handler.setFormatter(formatter_console)
+
+    # Configure structlog to route through stdlib
     structlog.configure(
         processors=[
             structlog.contextvars.merge_contextvars,
@@ -52,8 +104,7 @@ def setup_logging() -> None:
             structlog.processors.StackInfoRenderer(),
             structlog.processors.format_exc_info,
             structlog.processors.UnicodeDecoder(),
-            structlog.dev.ConsoleRenderer() if os.getenv("LOG_FORMAT") != "json"
-            else structlog.processors.JSONRenderer(),
+            structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
         ],
         wrapper_class=structlog.stdlib.BoundLogger,
         context_class=dict,

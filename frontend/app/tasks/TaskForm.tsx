@@ -91,7 +91,7 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Title */}
         <div>
-          <label className="block text-sm font-body text-text-secondary mb-1">
+          <label className="block text-sm font-body text-white mb-1">
             שם המשימה *
           </label>
           <input
@@ -99,14 +99,14 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="שם המשימה"
-            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent"
+            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent"
             autoFocus
           />
         </div>
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-body text-text-secondary mb-1">
+          <label className="block text-sm font-body text-white mb-1">
             תיאור
           </label>
           <textarea
@@ -114,13 +114,13 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
             onChange={(e) => setDescription(e.target.value)}
             placeholder="תיאור (אופציונלי)"
             rows={3}
-            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent resize-y"
+            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent resize-y"
           />
         </div>
 
         {/* Due Date */}
         <div>
-          <label className="block text-sm font-body text-text-secondary mb-1">
+          <label className="block text-sm font-body text-white mb-1">
             תאריך יעד
           </label>
           <DatePicker
@@ -132,7 +132,7 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
 
         {/* Urgency */}
         <div>
-          <label className="block text-sm font-body text-text-secondary mb-1">
+          <label className="block text-sm font-body text-white mb-1">
             דחיפות
           </label>
           <Select

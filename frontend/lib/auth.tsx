@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 
 interface AuthContextValue {
   token: string | null;
@@ -17,6 +18,7 @@ function getAuthCookie(): string | null {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
 
@@ -56,7 +58,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     document.cookie = "auth_token=; max-age=0; path=/";
     setToken(null);
-  }, []);
+    router.push("/login");
+  }, [router]);
 
   if (!checked) return null;
 

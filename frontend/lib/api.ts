@@ -23,8 +23,9 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, { ...options, headers, credentials: "include" });
 
   if (res.status === 401 && typeof window !== "undefined") {
-    // Cookie expired or invalid — clear auth state
+    // Cookie expired or invalid — clear auth state and redirect to login
     document.cookie = "auth_token=; max-age=0; path=/";
+    window.location.href = "/login";
     throw new Error("Unauthorized");
   }
 

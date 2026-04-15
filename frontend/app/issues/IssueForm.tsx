@@ -115,7 +115,7 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Supplier */}
         <div>
-          <label className="block text-sm font-body text-text-secondary mb-1">
+          <label className="block text-sm font-body text-white mb-1">
             ספק *
           </label>
           <Select
@@ -128,7 +128,7 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
 
         {/* Product Name */}
         <div>
-          <label className="block text-sm font-body text-text-secondary mb-1">
+          <label className="block text-sm font-body text-white mb-1">
             שם המוצר *
           </label>
           <input
@@ -136,13 +136,13 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
             value={productName}
             onChange={(e) => setProductName(e.target.value)}
             placeholder="שם המוצר"
-            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent"
+            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent"
           />
         </div>
 
         {/* SKU */}
         <div>
-          <label className="block text-sm font-body text-text-secondary mb-1">
+          <label className="block text-sm font-body text-white mb-1">
             מק״ט
           </label>
           <input
@@ -150,13 +150,13 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
             value={sku}
             onChange={(e) => setSku(e.target.value)}
             placeholder="מק״ט"
-            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent"
+            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent"
           />
         </div>
 
         {/* Arrival Date */}
         <div>
-          <label className="block text-sm font-body text-text-secondary mb-1">
+          <label className="block text-sm font-body text-white mb-1">
             תאריך הגעה *
           </label>
           <DatePicker
@@ -168,7 +168,7 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
 
         {/* Problem Description */}
         <div>
-          <label className="block text-sm font-body text-text-secondary mb-1">
+          <label className="block text-sm font-body text-white mb-1">
             תיאור הבעיה *
           </label>
           <textarea
@@ -176,13 +176,13 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
             onChange={(e) => setProblemDescription(e.target.value)}
             placeholder="תיאור הבעיה"
             rows={4}
-            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent resize-y"
+            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent resize-y"
           />
         </div>
 
         {/* Action Items */}
         <div>
-          <label className="block text-sm font-body text-text-secondary mb-1">
+          <label className="block text-sm font-body text-white mb-1">
             פעולות נדרשות
           </label>
 
@@ -220,7 +220,7 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
               onChange={(e) => setNewActionDesc(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addAction(); } }}
               placeholder="תיאור הפעולה"
-              className="flex-1 bg-surface-raised border border-white/[0.06] rounded-xl px-3 py-2 text-sm font-body text-text-primary placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent"
+              className="flex-1 bg-surface-raised border border-white/[0.06] rounded-xl px-3 py-2 text-sm font-body text-text-primary placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent"
             />
             <button
               type="button"

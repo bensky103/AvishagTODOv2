@@ -51,7 +51,7 @@ export function DatePicker({ value, onChange, placeholder = "בחר תאריך",
   const updatePosition = useCallback(() => {
     if (!ref.current) return;
     const rect = ref.current.getBoundingClientRect();
-    const dropdownHeight = 290; // approximate compact calendar height
+    const dropdownHeight = dropdownRef.current?.offsetHeight ?? 0;
     const spaceBelow = window.innerHeight - rect.bottom;
     const fitsBelow = spaceBelow > dropdownHeight + 10;
     setDropdownPos({
@@ -161,11 +161,12 @@ export function DatePicker({ value, onChange, placeholder = "בחר תאריך",
   const dropdown = open && dropdownPos && createPortal(
     <div
       ref={dropdownRef}
-      className="fixed z-[100] bg-surface border border-white/[0.08] rounded-xl shadow-modal p-2.5 animate-fade-in"
+      className="fixed z-[100] bg-surface border border-white/[0.08] rounded-xl shadow-modal p-2 animate-fade-in overflow-auto"
       style={{
         top: dropdownPos.top,
         left: dropdownPos.left,
-        width: Math.max(dropdownPos.width, 250),
+        width: `clamp(200px, ${dropdownPos.width}px, 90vw)`,
+        maxHeight: `calc(100vh - ${dropdownPos.top}px - 8px)`,
       }}
     >
       {viewMode === "days" ? (
@@ -178,7 +179,7 @@ export function DatePicker({ value, onChange, placeholder = "בחר תאריך",
               className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/[0.06] text-text-secondary transition-colors"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="15 18 9 12 15 6" />
+                <polyline points="9 18 15 12 9 6" />
               </svg>
             </button>
 
@@ -197,32 +198,32 @@ export function DatePicker({ value, onChange, placeholder = "בחר תאריך",
               className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/[0.06] text-text-secondary transition-colors"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="9 18 15 12 9 6" />
+                <polyline points="15 18 9 12 15 6" />
               </svg>
             </button>
           </div>
 
           {/* Day headers */}
-          <div className="grid grid-cols-7 gap-px mb-0.5">
+          <div className="grid grid-cols-7 gap-0">
             {HEBREW_DAYS.map((d) => (
-              <div key={d} className="text-center text-[9px] font-body text-text-secondary py-0.5">
+              <div key={d} className="text-center text-[9px] font-body text-text-secondary py-px">
                 {d}
               </div>
             ))}
           </div>
 
           {/* Day grid */}
-          <div className="grid grid-cols-7 gap-px">
+          <div className="grid grid-cols-7 gap-0">
             {cells.map((day, i) =>
               day === null ? (
-                <div key={`empty-${i}`} />
+                <div key={`empty-${i}`} className="w-full aspect-square max-h-9" />
               ) : (
                 <button
                   key={day}
                   type="button"
                   onClick={() => selectDay(day)}
                   className={`
-                    w-full aspect-square flex items-center justify-center rounded-md text-[11px] font-body transition-colors
+                    w-full aspect-square max-h-9 flex items-center justify-center rounded-md text-[11px] font-body transition-colors
                     ${isSelected(day)
                       ? "bg-emerald-600 text-white font-medium"
                       : isToday(day)
@@ -238,11 +239,11 @@ export function DatePicker({ value, onChange, placeholder = "בחר תאריך",
           </div>
 
           {/* Clear / Today shortcuts */}
-          <div className="flex gap-2 mt-1.5 pt-1.5 border-t border-white/[0.05]">
+          <div className="flex gap-2 mt-1 pt-1 border-t border-white/[0.05]">
             <button
               type="button"
               onClick={() => { onChange(toDateStr(today.getFullYear(), today.getMonth(), today.getDate())); setOpen(false); setViewMode("days"); }}
-              className="flex-1 py-1.5 text-xs font-body text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors"
+              className="flex-1 py-1 text-xs font-body text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors"
             >
               היום
             </button>
@@ -267,7 +268,7 @@ export function DatePicker({ value, onChange, placeholder = "בחר תאריך",
               className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/[0.06] text-text-secondary transition-colors"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="15 18 9 12 15 6" />
+                <polyline points="9 18 15 12 9 6" />
               </svg>
             </button>
 
@@ -281,7 +282,7 @@ export function DatePicker({ value, onChange, placeholder = "בחר תאריך",
               className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/[0.06] text-text-secondary transition-colors"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="9 18 15 12 9 6" />
+                <polyline points="15 18 9 12 15 6" />
               </svg>
             </button>
           </div>
@@ -332,7 +333,7 @@ export function DatePicker({ value, onChange, placeholder = "בחר תאריך",
         onClick={handleOpen}
         className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-right focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent flex items-center justify-between"
       >
-        <span className={displayValue ? "text-text-primary" : "text-gray-500"}>
+        <span className={displayValue ? "text-text-primary" : "text-gray-300"}>
           {displayValue || placeholder}
         </span>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-secondary flex-shrink-0">

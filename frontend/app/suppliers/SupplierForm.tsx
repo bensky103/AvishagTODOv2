@@ -82,7 +82,7 @@ export default function SupplierForm({
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Name */}
         <div>
-          <label className="block text-sm font-body text-text-secondary mb-1">
+          <label className="block text-sm font-body text-white mb-1">
             שם הספק *
           </label>
           <input
@@ -90,14 +90,14 @@ export default function SupplierForm({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="שם הספק"
-            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent"
+            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent"
             autoFocus
           />
         </div>
 
         {/* Contact Info */}
         <div>
-          <label className="block text-sm font-body text-text-secondary mb-1">
+          <label className="block text-sm font-body text-white mb-1">
             פרטי התקשרות
           </label>
           <input
@@ -105,13 +105,13 @@ export default function SupplierForm({
             value={contactInfo}
             onChange={(e) => setContactInfo(e.target.value)}
             placeholder="פרטי התקשרות"
-            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent"
+            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent"
           />
         </div>
 
         {/* Notes */}
         <div>
-          <label className="block text-sm font-body text-text-secondary mb-1">
+          <label className="block text-sm font-body text-white mb-1">
             הערות
           </label>
           <textarea
@@ -119,7 +119,7 @@ export default function SupplierForm({
             onChange={(e) => setNotes(e.target.value)}
             placeholder="הערות"
             rows={3}
-            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent resize-y"
+            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent resize-y"
           />
         </div>
 

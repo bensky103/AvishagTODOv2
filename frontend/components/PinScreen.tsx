@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 
 export function PinScreen() {
   const { login } = useAuth();
+  const router = useRouter();
   const [pin, setPin] = useState("");
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -15,7 +17,9 @@ export function PinScreen() {
     setLoading(true);
     const ok = await login(pin);
     setLoading(false);
-    if (!ok) {
+    if (ok) {
+      router.push("/");
+    } else {
       setError(true);
       setPin("");
     }

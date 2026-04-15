@@ -11,14 +11,15 @@ logger = structlog.get_logger("telegram")
 
 MAX_HISTORY_MESSAGES = 20
 
-HELP_TEXT = """🤖 *אבישג \- עוזרת ניהול רכש*
+HELP_TEXT = r"""🤖 *בוטי \- עוזר ניהול רכש*
 
-הנה מה שאני יכולה לעשות:
+הנה מה שאני יכול לעשות:
 
 📋 *משימות*
 • יצירת משימה חדשה
 • הצגת רשימת משימות \(פתוחות/סגורות\)
 • סימון משימה כהושלמה
+• פתיחה מחדש של משימה שהושלמה
 
 🏢 *ספקים*
 • יצירת ספק חדש
@@ -51,7 +52,8 @@ async def handle_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     if update.effective_user.id != settings.telegram_allowed_user_id:
         return
     await update.message.reply_text(
-        "שלום! 👋 אני אבישג, עוזרת ניהול הרכש שלך\\.\nשלחי /help כדי לראות את כל מה שאני יכולה לעשות\\.",
+        r"שלום\! 👋 אני בוטי, עוזר ניהול הרכש שלך\." "\n"
+        r"שלחי /help כדי לראות את כל מה שאני יכול לעשות\.",
         parse_mode="MarkdownV2",
     )
 

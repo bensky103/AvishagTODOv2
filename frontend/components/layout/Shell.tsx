@@ -8,7 +8,6 @@ import { useTasks } from "@/lib/queries/tasks";
 import { useIssues } from "@/lib/queries/issues";
 import { useSuppliers } from "@/lib/queries/suppliers";
 import { useAuth } from "@/lib/auth";
-import { PinScreen } from "@/components/PinScreen";
 
 const SIDEBAR_WIDE = 240;
 const SIDEBAR_NARROW = 68;
@@ -22,9 +21,9 @@ const C = {
   accentGlow: "rgba(20,168,122,0.2)",
   accentBg: "rgba(20,168,122,0.1)",
   accentBadge: "rgba(20,168,122,0.15)",
-  textMuted: "rgba(255,255,255,0.2)",
-  textDefault: "rgba(255,255,255,0.35)",
-  textHover: "rgba(255,255,255,0.6)",
+  textMuted: "rgba(255,255,255,0.5)",
+  textDefault: "rgba(255,255,255,0.75)",
+  textHover: "rgba(255,255,255,0.9)",
   textActive: "#5eead4",
   border: "rgba(255,255,255,0.05)",
 };
@@ -301,10 +300,15 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
 
 export function Shell({ children }: { children: ReactNode }) {
   const { token } = useAuth();
+  const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const sidebarWidth = collapsed ? SIDEBAR_NARROW : SIDEBAR_WIDE;
 
-  if (!token) return <PinScreen />;
+  // Login page renders without the shell chrome
+  if (pathname === "/login") return <>{children}</>;
+
+  // While middleware handles the redirect, avoid rendering the shell without auth
+  if (!token) return null;
 
   return (
     <div className="min-h-screen bg-base">
