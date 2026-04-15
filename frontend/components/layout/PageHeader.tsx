@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { heroGradient } from "@/lib/theme";
 
 interface PageHeaderProps {
   title: string;
@@ -10,7 +11,7 @@ export function PageHeader({ title, subtitle, children }: PageHeaderProps) {
   return (
     <header
       className="relative overflow-hidden px-5 pt-8 pb-12 text-white"
-      style={{ background: "linear-gradient(135deg, #14a87a 0%, #0d8c63 50%, #096e52 100%)" }}
+      style={{ background: heroGradient }}
     >
       <div className="relative z-10 max-w-5xl mx-auto">
         <h1 className="font-heading text-2xl">{title}</h1>

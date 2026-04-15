@@ -10,14 +10,12 @@ from app.agent.tools import get_agent_tools
 
 logger = structlog.get_logger("agent")
 
-MAX_ITERATIONS = 6
-
 # Reuse a single LLM client across calls
 _llm = ChatOpenAI(
-    model="gpt-4o",
+    model=settings.openai_model,
     api_key=settings.openai_api_key,
-    timeout=30,
-    max_retries=2,
+    timeout=settings.openai_timeout,
+    max_retries=settings.openai_max_retries,
     callbacks=[StructlogCallbackHandler()],
 )
 
@@ -33,7 +31,7 @@ async def run_agent(session: AsyncSession, user_message: str, history: list = No
         messages.extend(history)
     messages.append(HumanMessage(content=user_message))
 
-    for _ in range(MAX_ITERATIONS):
+    for _ in range(settings.agent_max_iterations):
         response = await llm_with_tools.ainvoke(messages)
         messages.append(response)
 
@@ -61,5 +59,5 @@ async def run_agent(session: AsyncSession, user_message: str, history: list = No
                 tool_call_id=tool_call["id"],
             ))
 
-    logger.error("agent_max_iterations", iterations=MAX_ITERATIONS)
+    logger.error("agent_max_iterations", iterations=settings.agent_max_iterations)
     return "סליחה, לא הצלחתי לסיים את הפעולה. נסי שוב."

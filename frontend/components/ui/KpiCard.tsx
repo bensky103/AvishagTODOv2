@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { variantAccent, tint } from "@/lib/theme";
 
 interface KpiCardProps {
   value: number | string;
@@ -8,13 +9,6 @@ interface KpiCardProps {
   href?: string;
   icon?: ReactNode;
 }
-
-const variantAccent: Record<string, string> = {
-  default: "#14a87a",
-  danger: "#ef4444",
-  success: "#14a87a",
-  warning: "#f59e0b",
-};
 
 export function KpiCard({ value, label, variant = "default", href, icon }: KpiCardProps) {
   const accent = variantAccent[variant];
@@ -27,7 +21,7 @@ export function KpiCard({ value, label, variant = "default", href, icon }: KpiCa
       {icon && (
         <div
           className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ backgroundColor: `${accent}18`, color: accent }}
+          style={{ backgroundColor: tint(accent, 0.09), color: accent }}
         >
           {icon}
         </div>

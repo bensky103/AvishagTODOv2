@@ -8,6 +8,7 @@ import { useSuppliers } from "@/lib/queries/suppliers";
 import { KpiCard } from "@/components/ui/KpiCard";
 import { TaskCard } from "@/components/ui/TaskCard";
 import { Badge } from "@/components/ui/Badge";
+import { heroGradient, tint, colors } from "@/lib/theme";
 import TaskForm from "./tasks/TaskForm";
 import IssueForm from "./issues/IssueForm";
 import SupplierForm from "./suppliers/SupplierForm";
@@ -70,7 +71,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen">
       {/* Hero header — teal gradient */}
-      <div className="relative overflow-hidden px-5 py-8 md:py-10 text-white" style={{ background: "linear-gradient(135deg, #14a87a 0%, #0d8c63 50%, #096e52 100%)" }}>
+      <div className="relative overflow-hidden px-5 py-8 md:py-10 text-white" style={{ background: heroGradient }}>
         <div className="relative z-10 max-w-5xl mx-auto">
           <h1 className="text-2xl md:text-3xl font-heading leading-tight">
             שלום, אבישג
@@ -143,7 +144,7 @@ export default function DashboardPage() {
           <section className="bg-surface rounded-2xl border border-white/[0.05] shadow-card overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.04]">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(245,158,11,0.12)" }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: tint(colors.warning, 0.12) }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10" />
                     <polyline points="12 6 12 12 16 14" />
@@ -178,7 +179,7 @@ export default function DashboardPage() {
           <section className="bg-surface rounded-2xl border border-white/[0.05] shadow-card overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.04]">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(239,68,68,0.12)" }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: tint(colors.danger, 0.12) }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
                     <line x1="12" y1="9" x2="12" y2="13" />
@@ -188,7 +189,7 @@ export default function DashboardPage() {
                 <h2 className="text-sm font-heading text-text-primary">תקלות אחרונות</h2>
               </div>
               {recentIssues.length > 0 && (
-                <Link href="/issues" className="text-xs font-body text-emerald-400 hover:text-emerald-300 font-medium">
+                <Link href="/issues" className="text-xs font-body text-primary hover:text-primary-light font-medium">
                   הצג הכל
                 </Link>
               )}
@@ -247,7 +248,7 @@ export default function DashboardPage() {
             onClick={() => setShowTaskForm(true)}
             className="bg-surface rounded-xl border border-white/[0.05] shadow-card p-3 md:p-5 flex flex-col md:flex-row items-center gap-2 md:gap-4 hover:border-white/[0.1] hover:shadow-card-hover transition-all duration-200 group text-center md:text-right"
           >
-            <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(99,102,241,0.12)" }}>
+            <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: tint("#6366f1", 0.12) }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
@@ -262,7 +263,7 @@ export default function DashboardPage() {
             onClick={() => setShowIssueForm(true)}
             className="bg-surface rounded-xl border border-white/[0.05] shadow-card p-3 md:p-5 flex flex-col md:flex-row items-center gap-2 md:gap-4 hover:border-white/[0.1] hover:shadow-card-hover transition-all duration-200 group text-center md:text-right"
           >
-            <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(239,68,68,0.12)" }}>
+            <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: tint(colors.danger, 0.12) }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
@@ -277,7 +278,7 @@ export default function DashboardPage() {
             onClick={() => setShowSupplierForm(true)}
             className="bg-surface rounded-xl border border-white/[0.05] shadow-card p-3 md:p-5 flex flex-col md:flex-row items-center gap-2 md:gap-4 hover:border-white/[0.1] hover:shadow-card-hover transition-all duration-200 group text-center md:text-right"
           >
-            <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(20,168,122,0.12)" }}>
+            <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: tint(colors.primary, 0.12) }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5eead4" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
@@ -302,14 +303,14 @@ export default function DashboardPage() {
 function EmptyState({ message, icon }: { message: string; icon: "check" | "shield" }) {
   return (
     <div className="flex flex-col items-center justify-center py-8 text-center">
-      <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3" style={{ background: "rgba(20,168,122,0.08)" }}>
+      <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3" style={{ background: tint(colors.primary, 0.08) }}>
         {icon === "check" ? (
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#14a87a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={colors.primary} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
             <polyline points="22 4 12 14.01 9 11.01" />
           </svg>
         ) : (
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#14a87a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={colors.primary} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
           </svg>
         )}

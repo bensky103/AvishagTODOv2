@@ -1,5 +1,7 @@
 "use client";
 
+import { brandGradient, tint, colors } from "@/lib/theme";
+
 interface FABProps {
   onClick: () => void;
 }
@@ -13,8 +15,8 @@ export function FAB({ onClick }: FABProps) {
       style={{
         width: 52,
         height: 52,
-        background: "linear-gradient(135deg, #14a87a, #0d8c63)",
-        boxShadow: "0 4px 14px rgba(20,168,122,0.35)",
+        background: brandGradient,
+        boxShadow: `0 4px 14px ${tint(colors.primary, 0.35)}`,
       }}
       aria-label="הוספה"
     >

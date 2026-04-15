@@ -22,6 +22,7 @@ interface ToastContextValue {
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
+const TOAST_DURATION_MS = 3000;
 let nextId = 0;
 
 export function ToastProvider({ children }: { children: ReactNode }) {
@@ -32,7 +33,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     setItems((prev) => [...prev, { id, message, type }]);
     setTimeout(() => {
       setItems((prev) => prev.filter((t) => t.id !== id));
-    }, 3000);
+    }, TOAST_DURATION_MS);
   }, []);
 
   return (

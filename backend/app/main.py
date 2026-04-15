@@ -57,7 +57,7 @@ async def auth_verify(body: dict):
         httponly=True,
         samesite="lax",
         path="/",
-        max_age=60 * 60 * 24 * 30,  # 30 days
+        max_age=settings.token_ttl_seconds,
     )
     return response
 

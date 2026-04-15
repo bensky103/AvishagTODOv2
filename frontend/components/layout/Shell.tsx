@@ -8,24 +8,20 @@ import { useTasks } from "@/lib/queries/tasks";
 import { useIssues } from "@/lib/queries/issues";
 import { useSuppliers } from "@/lib/queries/suppliers";
 import { useAuth } from "@/lib/auth";
+import { colors, brandGradient, tint, SIDEBAR_WIDE, SIDEBAR_NARROW } from "@/lib/theme";
 
-const SIDEBAR_WIDE = 240;
-const SIDEBAR_NARROW = 68;
-
-// Colors — dark professional with teal accent
 const C = {
-  bg: "#111115",
-  bgLight: "#1a1a20",
-  accent: "#14a87a",
-  accentLight: "#5eead4",
-  accentGlow: "rgba(20,168,122,0.2)",
-  accentBg: "rgba(20,168,122,0.1)",
-  accentBadge: "rgba(20,168,122,0.15)",
-  textMuted: "rgba(255,255,255,0.5)",
-  textDefault: "rgba(255,255,255,0.75)",
-  textHover: "rgba(255,255,255,0.9)",
-  textActive: "#5eead4",
-  border: "rgba(255,255,255,0.05)",
+  bg: colors.sidebarBg,
+  accent: colors.primary,
+  accentLight: colors.primaryLight,
+  accentGlow: tint(colors.primary, 0.2),
+  accentBg: tint(colors.primary, 0.1),
+  accentBadge: tint(colors.primary, 0.15),
+  textMuted: colors.textMuted,
+  textDefault: colors.textDefault,
+  textHover: colors.textHover,
+  textActive: colors.primaryLight,
+  border: colors.borderSubtle,
 };
 
 const mainNav = [
@@ -191,7 +187,7 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
         <div
           style={{
             width: 36, height: 36, borderRadius: 10,
-            background: `linear-gradient(135deg, ${C.accent}, #0d8c63)`,
+            background: brandGradient,
             display: "flex", alignItems: "center", justifyContent: "center",
             boxShadow: `0 0 20px ${C.accentGlow}`,
             flexShrink: 0,
@@ -279,7 +275,7 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
         <div
           style={{
             width: 34, height: 34, borderRadius: "50%",
-            background: `linear-gradient(135deg, ${C.accent}, #0d8c63)`,
+            background: brandGradient,
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 13, fontWeight: 600, color: "#fff",
             flexShrink: 0,

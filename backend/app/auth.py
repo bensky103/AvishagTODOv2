@@ -7,9 +7,6 @@ from starlette.responses import JSONResponse
 
 from app.config import settings
 
-TOKEN_TTL_SECONDS = 60 * 60 * 24 * 30  # 30 days
-MAX_TOKENS = 20  # prevent unbounded growth
-
 # Token store: token -> expiry timestamp
 _valid_tokens: dict[str, float] = {}
 
@@ -27,12 +24,12 @@ def verify_pin(pin: str) -> str | None:
     if pin == settings.pin_code:
         _cleanup_expired()
         # Enforce max tokens to prevent memory leak
-        if len(_valid_tokens) >= MAX_TOKENS:
+        if len(_valid_tokens) >= settings.max_active_tokens:
             # Remove the oldest token
             oldest = min(_valid_tokens, key=_valid_tokens.get)
             del _valid_tokens[oldest]
         token = secrets.token_urlsafe(32)
-        _valid_tokens[token] = time.time() + TOKEN_TTL_SECONDS
+        _valid_tokens[token] = time.time() + settings.token_ttl_seconds
         return token
     return None
 

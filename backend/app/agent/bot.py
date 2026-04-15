@@ -15,7 +15,6 @@ from app.agent.agent import run_agent
 logger = structlog.get_logger("telegram")
 
 
-MAX_HISTORY_TOKENS_ESTIMATE = 3000  # rough char-based estimate (1 token ≈ 4 chars)
 
 _BOLD_RE = re.compile(r"\*\*(.+?)\*\*")
 
@@ -73,7 +72,7 @@ async def handle_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     )
 
 
-def _trim_history(history: list, max_chars: int = MAX_HISTORY_TOKENS_ESTIMATE * 4) -> list:
+def _trim_history(history: list, max_chars: int = settings.bot_max_history_chars) -> list:
     """Trim history from the front to stay within approximate token budget."""
     total = sum(len(m.content) for m in history)
     while total > max_chars and len(history) >= 2:
