@@ -1,3 +1,4 @@
+import asyncio
 import html
 import re
 
@@ -94,8 +95,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     user_message = update.message.text
     logger.info("message_received", text=user_message[:100])
 
-    # Send typing indicator while processing
-    await update.message.chat.send_action("typing")
+    # Send typing indicator repeatedly while processing
+    async def keep_typing():
+        while True:
+            await update.message.chat.send_action("typing")
+            await asyncio.sleep(4)
+
+    typing_task = asyncio.create_task(keep_typing())
 
     # Retrieve conversation history from context (in-memory, per user)
     if "history" not in context.user_data:
@@ -119,6 +125,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         except Exception as e:
             logger.error("agent_error", error=str(e))
             await update.message.reply_text("שגיאה בעיבוד ההודעה. נסי שוב.")
+        finally:
+            typing_task.cancel()
 
 
 def create_bot_application() -> Application:

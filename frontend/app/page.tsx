@@ -242,50 +242,50 @@ export default function DashboardPage() {
           <h2 className="text-sm font-heading text-text-primary">פעולות מהירות</h2>
           <div className="flex-1 h-px bg-white/[0.05]" />
         </div>
-        <div className="grid grid-cols-3 gap-4 pb-8">
+        <div className="grid grid-cols-3 gap-3 md:gap-4 pb-8">
           <button
             onClick={() => setShowTaskForm(true)}
-            className="bg-surface rounded-xl border border-white/[0.05] shadow-card p-5 flex items-center gap-4 hover:border-white/[0.1] hover:shadow-card-hover transition-all duration-200 group text-right"
+            className="bg-surface rounded-xl border border-white/[0.05] shadow-card p-3 md:p-5 flex flex-col md:flex-row items-center gap-2 md:gap-4 hover:border-white/[0.1] hover:shadow-card-hover transition-all duration-200 group text-center md:text-right"
           >
-            <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(99,102,241,0.12)" }}>
+            <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(99,102,241,0.12)" }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
             </div>
-            <div>
-              <p className="text-sm font-heading text-text-primary group-hover:text-white transition-colors">משימה חדשה</p>
-              <p className="text-xs font-body text-text-secondary mt-0.5">הוסף משימה לרשימה</p>
+            <div className="min-w-0">
+              <p className="text-xs md:text-sm font-heading text-text-primary group-hover:text-white transition-colors">משימה חדשה</p>
+              <p className="text-[10px] md:text-xs font-body text-text-secondary mt-0.5 hidden md:block">הוסף משימה לרשימה</p>
             </div>
           </button>
           <button
             onClick={() => setShowIssueForm(true)}
-            className="bg-surface rounded-xl border border-white/[0.05] shadow-card p-5 flex items-center gap-4 hover:border-white/[0.1] hover:shadow-card-hover transition-all duration-200 group text-right"
+            className="bg-surface rounded-xl border border-white/[0.05] shadow-card p-3 md:p-5 flex flex-col md:flex-row items-center gap-2 md:gap-4 hover:border-white/[0.1] hover:shadow-card-hover transition-all duration-200 group text-center md:text-right"
           >
-            <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(239,68,68,0.12)" }}>
+            <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(239,68,68,0.12)" }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
             </div>
-            <div>
-              <p className="text-sm font-heading text-text-primary group-hover:text-white transition-colors">תקלה חדשה</p>
-              <p className="text-xs font-body text-text-secondary mt-0.5">דווח על תקלה</p>
+            <div className="min-w-0">
+              <p className="text-xs md:text-sm font-heading text-text-primary group-hover:text-white transition-colors">תקלה חדשה</p>
+              <p className="text-[10px] md:text-xs font-body text-text-secondary mt-0.5 hidden md:block">דווח על תקלה</p>
             </div>
           </button>
           <button
             onClick={() => setShowSupplierForm(true)}
-            className="bg-surface rounded-xl border border-white/[0.05] shadow-card p-5 flex items-center gap-4 hover:border-white/[0.1] hover:shadow-card-hover transition-all duration-200 group text-right"
+            className="bg-surface rounded-xl border border-white/[0.05] shadow-card p-3 md:p-5 flex flex-col md:flex-row items-center gap-2 md:gap-4 hover:border-white/[0.1] hover:shadow-card-hover transition-all duration-200 group text-center md:text-right"
           >
-            <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(20,168,122,0.12)" }}>
+            <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(20,168,122,0.12)" }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5eead4" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
             </div>
-            <div>
-              <p className="text-sm font-heading text-text-primary group-hover:text-white transition-colors">ספק חדש</p>
-              <p className="text-xs font-body text-text-secondary mt-0.5">הוסף ספק למערכת</p>
+            <div className="min-w-0">
+              <p className="text-xs md:text-sm font-heading text-text-primary group-hover:text-white transition-colors">ספק חדש</p>
+              <p className="text-[10px] md:text-xs font-body text-text-secondary mt-0.5 hidden md:block">הוסף ספק למערכת</p>
             </div>
           </button>
         </div>
