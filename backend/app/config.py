@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     pin_code: str  # required — must be set in .env
     rate_limit: str = "60/minute"
 
-    model_config = {"env_file": ".env"}
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 
 settings = Settings()

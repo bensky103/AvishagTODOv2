@@ -24,14 +24,13 @@ RUN mkdir -p /data
 # ---- Frontend static files ----
 COPY --from=frontend-build /app/out /usr/share/nginx/html
 
-# ---- Nginx config ----
-COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
-# Remove the default nginx site so only our config is used
-RUN rm -f /etc/nginx/sites-enabled/default
+# ---- Nginx config (template — port injected at runtime) ----
+COPY nginx/nginx.conf /etc/nginx/nginx-site.conf.template
+# Remove ALL default nginx sites so only ours is used
+RUN rm -f /etc/nginx/sites-enabled/default /etc/nginx/conf.d/default.conf
 
 # ---- Entrypoint: start both nginx and uvicorn ----
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-EXPOSE 80
 CMD ["/entrypoint.sh"]
