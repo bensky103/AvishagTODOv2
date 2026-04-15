@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useIssues } from "@/lib/queries/issues";
 import { useSuppliers } from "@/lib/queries/suppliers";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -11,6 +12,8 @@ import IssueDetail from "./IssueDetail";
 
 type StatusFilter = "open" | "in_progress" | "resolved";
 
+const VALID_FILTERS: StatusFilter[] = ["open", "in_progress", "resolved"];
+
 const filterOptions = [
   { value: "open" as const, label: "פתוחות" },
   { value: "in_progress" as const, label: "בטיפול" },
@@ -18,7 +21,28 @@ const filterOptions = [
 ];
 
 export default function IssuesPage() {
-  const [filter, setFilter] = useState<StatusFilter>("open");
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center py-16">
+        <div className="w-7 h-7 border-2 border-emerald-800 border-t-emerald-400 rounded-full animate-spin" />
+      </div>
+    }>
+      <IssuesPageContent />
+    </Suspense>
+  );
+}
+
+function IssuesPageContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const paramFilter = searchParams.get("status") as StatusFilter | null;
+  const filter: StatusFilter = paramFilter && VALID_FILTERS.includes(paramFilter) ? paramFilter : "open";
+
+  const setFilter = useCallback((val: StatusFilter) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("status", val);
+    router.replace(`?${params.toString()}`);
+  }, [searchParams, router]);
   const [showCreate, setShowCreate] = useState(false);
   const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null);
 

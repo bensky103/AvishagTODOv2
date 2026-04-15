@@ -76,24 +76,22 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
         problem_description: problemDescription.trim(),
       },
       {
-        onSuccess: (issue) => {
-          // Create action items sequentially after issue creation
+        onSuccess: async (issue) => {
           if (actions.length > 0) {
-            let completed = 0;
-            actions.forEach((action) => {
-              addActionItem.mutate(
-                { issueId: issue.id, data: { description: action.description, create_task: action.createTask } },
-                {
-                  onSettled: () => {
-                    completed++;
-                    if (completed === actions.length) {
-                      toast("התקלה נוצרה בהצלחה", "success");
-                      onClose();
-                    }
-                  },
-                }
+            try {
+              await Promise.all(
+                actions.map((action) =>
+                  addActionItem.mutateAsync({
+                    issueId: issue.id,
+                    data: { description: action.description, create_task: action.createTask },
+                  })
+                )
               );
-            });
+              toast("התקלה נוצרה בהצלחה", "success");
+            } catch {
+              toast("התקלה נוצרה אך חלק מהפעולות נכשלו", "error");
+            }
+            onClose();
           } else {
             toast("התקלה נוצרה בהצלחה", "success");
             onClose();

@@ -40,11 +40,16 @@ async def list_suppliers(session: AsyncSession, skip: int = 0, limit: int = 100)
     return list(result.scalars().all())
 
 
+_UPDATABLE_FIELDS = {"name", "contact_info", "notes"}
+
+
 async def update_supplier(session: AsyncSession, supplier_id: int, **kwargs) -> Supplier:
     supplier = await session.get(Supplier, supplier_id)
     if not supplier:
         raise ValueError(f"Supplier {supplier_id} not found")
     for key, value in kwargs.items():
+        if key not in _UPDATABLE_FIELDS:
+            raise ValueError(f"Cannot update field: {key}")
         setattr(supplier, key, value)
     await session.commit()
     await session.refresh(supplier)

@@ -4,27 +4,30 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import { useRouter } from "next/navigation";
 
 interface AuthContextValue {
-  token: string | null;
+  authenticated: boolean;
+  loading: boolean;
   login: (pin: string) => Promise<boolean>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function getAuthCookie(): string | null {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(/(?:^|; )auth_token=([^;]*)/);
-  return match ? decodeURIComponent(match[1]) : null;
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const [token, setToken] = useState<string | null>(null);
-  const [checked, setChecked] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setToken(getAuthCookie());
-    setChecked(true);
+    // Check auth status via httponly cookie (server validates)
+    fetch("/api/auth/check", { credentials: "include" })
+      .then((res) => {
+        setAuthenticated(res.ok);
+        setLoading(false);
+      })
+      .catch(() => {
+        setAuthenticated(false);
+        setLoading(false);
+      });
   }, []);
 
   const login = useCallback(async (pin: string): Promise<boolean> => {
@@ -36,35 +39,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         credentials: "include",
       });
       if (!res.ok) return false;
-      // Backend sets Set-Cookie header; read it after response
-      const cookie = getAuthCookie();
-      if (cookie) {
-        setToken(cookie);
-        return true;
-      }
-      // If cookie didn't come through the proxy, set it manually from the response
-      const data = await res.json();
-      if (data.token) {
-        document.cookie = `auth_token=${data.token}; path=/; max-age=${60 * 60 * 24 * 30}; samesite=lax`;
-        setToken(data.token);
-        return true;
-      }
-      return false;
+      // Server sets httponly cookie automatically
+      setAuthenticated(true);
+      return true;
     } catch {
       return false;
     }
   }, []);
 
-  const logout = useCallback(() => {
-    document.cookie = "auth_token=; max-age=0; path=/";
-    setToken(null);
+  const logout = useCallback(async () => {
+    await fetch("/api/auth/logout", { method: "POST", credentials: "include" }).catch(() => {});
+    setAuthenticated(false);
     router.push("/login");
   }, [router]);
 
-  if (!checked) return null;
+  if (loading) return null;
 
   return (
-    <AuthContext.Provider value={{ token, login, logout }}>
+    <AuthContext.Provider value={{ authenticated, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

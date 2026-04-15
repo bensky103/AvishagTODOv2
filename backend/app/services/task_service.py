@@ -91,11 +91,16 @@ async def reopen_task(session: AsyncSession, task_id: int) -> Task:
     return task
 
 
+_UPDATABLE_FIELDS = {"title", "description", "due_date", "urgency"}
+
+
 async def update_task(session: AsyncSession, task_id: int, **kwargs) -> Task:
     task = await session.get(Task, task_id)
     if not task:
         raise ValueError(f"Task {task_id} not found")
     for key, value in kwargs.items():
+        if key not in _UPDATABLE_FIELDS:
+            raise ValueError(f"Cannot update field: {key}")
         setattr(task, key, value)
     await session.commit()
     await session.refresh(task)

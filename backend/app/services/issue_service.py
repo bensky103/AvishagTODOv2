@@ -52,7 +52,7 @@ async def list_issue_reports(
     limit: int = 100,
 ) -> list[IssueReport]:
     stmt = select(IssueReport).options(selectinload(IssueReport.action_items).selectinload(ActionItem.task))
-    if supplier_id:
+    if supplier_id is not None:
         stmt = stmt.where(IssueReport.supplier_id == supplier_id)
     if status:
         stmt = stmt.where(IssueReport.status == status)
@@ -72,11 +72,16 @@ async def resolve_issue_report(session: AsyncSession, issue_id: int) -> IssueRep
     return await get_issue_report(session, issue_id)
 
 
+_UPDATABLE_FIELDS = {"product_name", "sku", "arrival_date", "problem_description", "status"}
+
+
 async def update_issue(session: AsyncSession, issue_id: int, **kwargs) -> IssueReport:
     issue = await session.get(IssueReport, issue_id)
     if not issue:
         raise ValueError(f"Issue {issue_id} not found")
     for key, value in kwargs.items():
+        if key not in _UPDATABLE_FIELDS:
+            raise ValueError(f"Cannot update field: {key}")
         setattr(issue, key, value)
     await session.commit()
     logger.info("issue_updated", issue_id=issue_id)
@@ -108,10 +113,13 @@ async def add_action_item(
     issue_report_id: int,
     description: str,
     create_task: bool = False,
+    task_description: str = "",
+    urgency: str = "medium",
+    due_date=None,
 ) -> ActionItem:
     task_id = None
     if create_task:
-        task = Task(title=description)
+        task = Task(title=description, description=task_description or None, urgency=urgency, due_date=due_date)
         session.add(task)
         await session.flush()
         task_id = task.id
@@ -134,8 +142,9 @@ async def complete_action_item(session: AsyncSession, action_item_id: int) -> Ac
     action.is_completed = True
     if action.task_id:
         task = await session.get(Task, action.task_id)
-        task.is_completed = True
-        task.completed_at = datetime.now(UTC)
+        if task:
+            task.is_completed = True
+            task.completed_at = datetime.now(UTC)
     await session.commit()
     await session.refresh(action)
     return action
@@ -148,8 +157,9 @@ async def uncomplete_action_item(session: AsyncSession, action_item_id: int) -> 
     action.is_completed = False
     if action.task_id:
         task = await session.get(Task, action.task_id)
-        task.is_completed = False
-        task.completed_at = None
+        if task:
+            task.is_completed = False
+            task.completed_at = None
     await session.commit()
     await session.refresh(action)
     return action

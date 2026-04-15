@@ -1,4 +1,5 @@
 from datetime import date
+from difflib import SequenceMatcher
 from typing import Optional
 
 from langchain_core.tools import tool
@@ -6,6 +7,41 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.task import Task
 from app.services import task_service, supplier_service, issue_service
+
+
+def _fuzzy_match(query: str, candidates: list, key=None, threshold: float = 0.4):
+    """Find the best fuzzy match for a query string among candidates.
+
+    Returns the best matching candidate or None if no match exceeds the threshold.
+    Uses both substring containment (fast path) and SequenceMatcher (fuzzy path).
+    """
+    if not candidates:
+        return None
+
+    get_name = key or (lambda x: x)
+
+    query_lower = query.lower().strip()
+
+    # Fast path: exact match (case-insensitive)
+    for c in candidates:
+        if query_lower == get_name(c).lower().strip():
+            return c
+
+    # Score all candidates and pick the best
+    best_candidate = None
+    best_score = 0.0
+    for c in candidates:
+        name_lower = get_name(c).lower().strip()
+        # Substring containment gets a boost but still competes with others
+        if query_lower in name_lower or name_lower in query_lower:
+            score = SequenceMatcher(None, query_lower, name_lower).ratio()
+            score = max(score, 0.6)  # substring match is at least 0.6
+        else:
+            score = SequenceMatcher(None, query_lower, name_lower).ratio()
+        if score > best_score:
+            best_score = score
+            best_candidate = c
+    return best_candidate if best_score >= threshold else None
 
 
 def get_agent_tools(session: AsyncSession) -> list:
@@ -22,19 +58,22 @@ def get_agent_tools(session: AsyncSession) -> list:
         title: required. description: optional. due_date: YYYY-MM-DD format, ask user if not specified.
         urgency: must be one of low/medium/high/critical, ask user if not specified."""
         if not title.strip():
-            return "Error: title is required. Ask the user for a task title."
+            return "שגיאה: חסר כותרת למשימה. שאלי את המשתמשת מה שם המשימה."
         if not urgency:
-            return "Error: urgency was not specified. Ask the user to choose: low, medium, high, or critical."
+            return "שגיאה: לא צוינה דחיפות. שאלי את המשתמשת לבחור: low, medium, high, או critical."
         if urgency not in ("low", "medium", "high", "critical"):
-            return f"Error: invalid urgency '{urgency}'. Must be one of: low, medium, high, critical."
+            return f"שגיאה: דחיפות '{urgency}' לא תקינה. חייבת להיות אחת מ: low, medium, high, critical."
         parsed_date = None
         if due_date:
-            parsed_date = date.fromisoformat(due_date)
+            try:
+                parsed_date = date.fromisoformat(due_date)
+            except ValueError:
+                return f"שגיאה: תאריך '{due_date}' לא בפורמט תקין. השתמשי בפורמט YYYY-MM-DD."
         t = await task_service.create_task(
             session, title=title.strip(), description=description or None,
             due_date=parsed_date, urgency=urgency,
         )
-        return f"Task created: id={t.id}, title='{t.title}', urgency={t.urgency}, due={t.due_date}"
+        return f"משימה נוצרה: id={t.id}, כותרת='{t.title}', דחיפות={t.urgency}, תאריך יעד={t.due_date}"
 
     @tool
     async def list_tasks(
@@ -43,7 +82,12 @@ def get_agent_tools(session: AsyncSession) -> list:
         due_before: str = "",
     ) -> str:
         """List tasks with optional filters. status: 'open' or 'completed'. urgency: low/medium/high/critical. due_before: YYYY-MM-DD."""
-        parsed_date = date.fromisoformat(due_before) if due_before else None
+        parsed_date = None
+        if due_before:
+            try:
+                parsed_date = date.fromisoformat(due_before)
+            except ValueError:
+                return f"שגיאה: תאריך '{due_before}' לא בפורמט תקין. השתמשי בפורמט YYYY-MM-DD."
         tasks = await task_service.list_tasks(
             session,
             status=status or None,
@@ -51,11 +95,11 @@ def get_agent_tools(session: AsyncSession) -> list:
             due_before=parsed_date,
         )
         if not tasks:
-            return "No tasks found matching the filters."
+            return "לא נמצאו משימות התואמות את הסינון."
         lines = []
         for t in tasks:
             status_mark = "\u2705" if t.is_completed else "\u2b1c"
-            lines.append(f"{status_mark} [{t.id}] {t.title} (urgency={t.urgency}, due={t.due_date})")
+            lines.append(f"{status_mark} [{t.id}] {t.title} (דחיפות={t.urgency}, תאריך יעד={t.due_date})")
         return "\n".join(lines)
 
     async def _resolve_task(task_id: int = 0, task_name: str = "") -> Task | str:
@@ -63,16 +107,16 @@ def get_agent_tools(session: AsyncSession) -> list:
         if task_id:
             task = await task_service.get_task(session, task_id)
             if not task:
-                return f"Error: Task with id {task_id} not found."
+                return f"שגיאה: משימה עם id {task_id} לא נמצאה."
             return task
         if task_name:
             tasks = await task_service.list_tasks(session)
-            for t in tasks:
-                if task_name in t.title or t.title in task_name:
-                    return t
+            matched = _fuzzy_match(task_name, tasks, key=lambda t: t.title)
+            if matched:
+                return matched
             available = ", ".join(f"[{t.id}] {t.title}" for t in tasks[:10])
-            return f"Error: Task '{task_name}' not found. Available tasks: {available}"
-        return "Error: provide either task_id or task_name."
+            return f"שגיאה: משימה '{task_name}' לא נמצאה. משימות זמינות: {available}"
+        return "שגיאה: יש לספק task_id או task_name."
 
     @tool
     async def complete_task(task_id: int = 0, task_name: str = "") -> str:
@@ -82,9 +126,9 @@ def get_agent_tools(session: AsyncSession) -> list:
             return result
         try:
             t = await task_service.complete_task(session, result.id)
-            return f"Task {t.id} '{t.title}' marked as completed."
+            return f"משימה {t.id} '{t.title}' סומנה כהושלמה."
         except ValueError as e:
-            return f"Error: {e}"
+            return f"שגיאה: {e}"
 
     @tool
     async def reopen_task(task_id: int = 0, task_name: str = "") -> str:
@@ -94,85 +138,121 @@ def get_agent_tools(session: AsyncSession) -> list:
             return result
         try:
             t = await task_service.reopen_task(session, result.id)
-            return f"Task {t.id} '{t.title}' reopened successfully."
+            return f"משימה {t.id} '{t.title}' נפתחה מחדש."
         except ValueError as e:
-            return f"Error: {e}"
+            return f"שגיאה: {e}"
+
+    @tool
+    async def update_task(
+        task_id: int = 0,
+        task_name: str = "",
+        new_title: str = "",
+        new_description: str = "",
+        new_due_date: str = "",
+        new_urgency: str = "",
+    ) -> str:
+        """Update an existing task's details. Identify the task by task_id or task_name (fuzzy matched).
+        Provide any combination of: new_title, new_description, new_due_date (YYYY-MM-DD), new_urgency (low/medium/high/critical)."""
+        result = await _resolve_task(task_id, task_name)
+        if isinstance(result, str):
+            return result
+        if not any([new_title, new_description, new_due_date, new_urgency]):
+            return "שגיאה: יש לספק לפחות שדה אחד לעדכון (new_title, new_description, new_due_date, new_urgency)."
+        kwargs = {}
+        if new_title:
+            kwargs["title"] = new_title.strip()
+        if new_description:
+            kwargs["description"] = new_description
+        if new_due_date:
+            try:
+                kwargs["due_date"] = date.fromisoformat(new_due_date)
+            except ValueError:
+                return f"שגיאה: תאריך '{new_due_date}' לא בפורמט תקין. השתמשי בפורמט YYYY-MM-DD."
+        if new_urgency:
+            if new_urgency not in ("low", "medium", "high", "critical"):
+                return f"שגיאה: דחיפות '{new_urgency}' לא תקינה. חייבת להיות אחת מ: low, medium, high, critical."
+            kwargs["urgency"] = new_urgency
+        try:
+            t = await task_service.update_task(session, result.id, **kwargs)
+            return f"משימה {t.id} '{t.title}' עודכנה בהצלחה."
+        except ValueError as e:
+            return f"שגיאה: {e}"
+
+    @tool
+    async def delete_task(task_id: int = 0, task_name: str = "", confirmed: bool = False) -> str:
+        """Delete a task permanently. Identify by task_id or task_name (fuzzy matched).
+        You must first ask the user for confirmation, then call again with confirmed=True."""
+        result = await _resolve_task(task_id, task_name)
+        if isinstance(result, str):
+            return result
+        if not confirmed:
+            return f"משימה '{result.title}' (id={result.id}) תימחק לצמיתות. בקשי אישור מהמשתמשת ואז קראי שוב עם confirmed=True."
+        try:
+            await task_service.delete_task(session, result.id)
+            return f"משימה {result.id} '{result.title}' נמחקה בהצלחה."
+        except ValueError as e:
+            return f"שגיאה: {e}"
 
     @tool
     async def create_supplier(name: str, contact_info: str = "") -> str:
         """Register a new supplier."""
-        s = await supplier_service.create_supplier(session, name=name, contact_info=contact_info or None)
-        return f"Supplier created: id={s.id}, name='{s.name}'"
+        try:
+            s = await supplier_service.create_supplier(session, name=name, contact_info=contact_info or None)
+            return f"ספק נוצר: id={s.id}, שם='{s.name}'"
+        except ValueError as e:
+            return f"שגיאה: {e}"
 
     @tool
     async def list_suppliers() -> str:
         """List all registered suppliers."""
         suppliers = await supplier_service.list_suppliers(session)
         if not suppliers:
-            return "No suppliers registered."
-        lines = [f"[{s.id}] {s.name} (contact: {s.contact_info or 'N/A'})" for s in suppliers]
+            return "אין ספקים רשומים במערכת."
+        lines = [f"[{s.id}] {s.name} (איש קשר: {s.contact_info or 'לא צוין'})" for s in suppliers]
         return "\n".join(lines)
+
+    async def _resolve_supplier(supplier_name: str):
+        """Find a supplier by fuzzy name match. Returns (supplier, None) or (None, error_string)."""
+        suppliers = await supplier_service.list_suppliers(session)
+        matched = _fuzzy_match(supplier_name, suppliers, key=lambda s: s.name)
+        if matched:
+            return matched, None
+        available = ", ".join(s.name for s in suppliers)
+        return None, f"ספק '{supplier_name}' לא נמצא. ספקים זמינים: {available}"
 
     @tool
     async def update_supplier(supplier_name: str, new_name: str = "", new_contact_info: str = "") -> str:
         """Update an existing supplier's details. supplier_name is matched fuzzily. Provide new_name and/or new_contact_info to update."""
         if not new_name and not new_contact_info:
-            return "Error: provide at least one field to update (new_name or new_contact_info)."
-        suppliers = await supplier_service.list_suppliers(session)
-        matched = None
-        for s in suppliers:
-            if supplier_name in s.name or s.name in supplier_name:
-                matched = s
-                break
-        if not matched:
-            return f"Supplier '{supplier_name}' not found. Available: {', '.join(s.name for s in suppliers)}"
+            return "שגיאה: יש לספק לפחות שדה אחד לעדכון (new_name או new_contact_info)."
+        matched, error = await _resolve_supplier(supplier_name)
+        if error:
+            return error
         kwargs = {}
         if new_name:
             kwargs["name"] = new_name
         if new_contact_info:
             kwargs["contact_info"] = new_contact_info
         updated = await supplier_service.update_supplier(session, matched.id, **kwargs)
-        return f"Supplier updated: id={updated.id}, name='{updated.name}', contact='{updated.contact_info or 'N/A'}'"
+        return f"ספק עודכן: id={updated.id}, שם='{updated.name}', איש קשר='{updated.contact_info or 'לא צוין'}'"
 
     @tool
     async def delete_supplier(supplier_name: str, confirmed: bool = False) -> str:
         """Delete a supplier by name. supplier_name is matched fuzzily.
-        If the supplier has unresolved issues, returns the list of issues so you can show them to the user.
+        If the supplier has unresolved issues, deletion will be blocked.
         If the supplier has NO issues, you must first ask the user for confirmation, then call again with confirmed=True."""
-        suppliers = await supplier_service.list_suppliers(session)
-        matched = None
-        for s in suppliers:
-            if supplier_name in s.name or s.name in supplier_name:
-                matched = s
-                break
-        if not matched:
-            return f"Supplier '{supplier_name}' not found. Available: {', '.join(s.name for s in suppliers)}"
-
-        # Check for unresolved issues and list them
-        from app.models.issue_report import IssueReport
-        from sqlalchemy import select
-        unresolved = (await session.execute(
-            select(IssueReport).where(
-                IssueReport.supplier_id == matched.id,
-                IssueReport.status != "resolved",
-            )
-        )).scalars().all()
-        if unresolved:
-            lines = [f"- [{i.id}] {i.product_name}: {i.problem_description} (status={i.status})" for i in unresolved]
-            return (
-                f"Cannot delete supplier '{matched.name}' — has {len(unresolved)} open issue(s):\n"
-                + "\n".join(lines)
-                + "\nAsk the user to resolve these issues first before deleting."
-            )
+        matched, error = await _resolve_supplier(supplier_name)
+        if error:
+            return error
 
         if not confirmed:
-            return f"Supplier '{matched.name}' (id={matched.id}) has no open issues. Ask the user to confirm deletion, then call delete_supplier again with confirmed=True."
+            return f"ספק '{matched.name}' (id={matched.id}) יימחק לצמיתות. בקשי אישור מהמשתמשת ואז קראי שוב עם confirmed=True."
 
         try:
             await supplier_service.delete_supplier(session, matched.id)
-            return f"Supplier '{matched.name}' (id={matched.id}) deleted successfully."
+            return f"ספק '{matched.name}' (id={matched.id}) נמחק בהצלחה."
         except ValueError as e:
-            return f"Error: {e}"
+            return f"שגיאה: {e}"
 
     @tool
     async def create_issue_report(
@@ -189,28 +269,29 @@ def get_agent_tools(session: AsyncSession) -> list:
         arrival_date: YYYY-MM-DD format, defaults to today if user doesn't specify.
         sku: optional."""
         if not supplier_name.strip():
-            return "Error: supplier_name is required. Ask the user which supplier this issue is for."
+            return "שגיאה: חסר שם ספק. שאלי את המשתמשת לאיזה ספק התקלה שייכת."
         if not product_name.strip():
-            return "Error: product_name is required. Ask the user for the product name (שם המוצר)."
+            return "שגיאה: חסר שם מוצר. שאלי את המשתמשת מה שם המוצר (שם המוצר)."
         if not problem_description.strip():
-            return "Error: problem_description is required. Ask the user to describe the problem."
+            return "שגיאה: חסר תיאור הבעיה. שאלי את המשתמשת לתאר את הבעיה."
 
-        suppliers = await supplier_service.list_suppliers(session)
-        matched = None
-        for s in suppliers:
-            if supplier_name in s.name or s.name in supplier_name:
-                matched = s
-                break
-        if not matched:
-            return f"Supplier '{supplier_name}' not found. Available suppliers: {', '.join(s.name for s in suppliers)}"
+        matched, error = await _resolve_supplier(supplier_name)
+        if error:
+            return error
 
-        parsed_date = date.fromisoformat(arrival_date) if arrival_date else date.today()
+        parsed_date = date.today()
+        if arrival_date:
+            try:
+                parsed_date = date.fromisoformat(arrival_date)
+            except ValueError:
+                return f"שגיאה: תאריך '{arrival_date}' לא בפורמט תקין. השתמשי בפורמט YYYY-MM-DD."
+
         issue = await issue_service.create_issue_report(
             session, supplier_id=matched.id, product_name=product_name.strip(),
             sku=sku or None, arrival_date=parsed_date,
             problem_description=problem_description.strip(),
         )
-        return f"Issue report created: id={issue.id}, supplier='{matched.name}', product='{product_name}', status={issue.status}"
+        return f"תקלה נוצרה: id={issue.id}, ספק='{matched.name}', מוצר='{product_name}', סטטוס={issue.status}"
 
     @tool
     async def list_issues(supplier_name: str = "", status: str = "") -> str:
@@ -220,24 +301,23 @@ def get_agent_tools(session: AsyncSession) -> list:
 
         supplier_id = None
         if supplier_name:
-            for s in suppliers:
-                if supplier_name in s.name or s.name in supplier_name:
-                    supplier_id = s.id
-                    break
+            matched = _fuzzy_match(supplier_name, suppliers, key=lambda s: s.name)
+            if matched:
+                supplier_id = matched.id
 
         issues = await issue_service.list_issue_reports(
             session, supplier_id=supplier_id, status=status or None,
         )
         if not issues:
-            return "No issues found matching the filters."
+            return "לא נמצאו תקלות התואמות את הסינון."
         lines = []
         for i in issues:
             action_count = len(i.action_items) if i.action_items else 0
             done_count = sum(1 for a in i.action_items if a.is_completed) if i.action_items else 0
-            s_name = supplier_names.get(i.supplier_id, f"unknown({i.supplier_id})")
+            s_name = supplier_names.get(i.supplier_id, f"לא ידוע({i.supplier_id})")
             lines.append(
-                f"[{i.id}] {i.product_name} (supplier={s_name}, status={i.status}, "
-                f"actions={done_count}/{action_count}, date={i.arrival_date})"
+                f"[{i.id}] {i.product_name} (ספק={s_name}, סטטוס={i.status}, "
+                f"פעולות={done_count}/{action_count}, תאריך={i.arrival_date})"
             )
         return "\n".join(lines)
 
@@ -246,56 +326,85 @@ def get_agent_tools(session: AsyncSession) -> list:
         issue_report_id: int,
         description: str,
         create_task: bool = False,
+        task_description: str = "",
+        urgency: str = "",
+        due_date: str = "",
     ) -> str:
-        """Add an action item to an issue report. Set create_task=True to also create a linked task in the TODO list."""
+        """Add an action item to an issue report. Set create_task=True to also create a linked task in the TODO list.
+        When create_task=True, you must ask the user for:
+        1. urgency (low/medium/high/critical) - required
+        2. task_description - suggest adding a description for the linked task (optional, can be left empty)
+        3. due_date (optional, YYYY-MM-DD)"""
+        if create_task and not urgency:
+            return "שגיאה: כשיוצרים משימה מקושרת, חובה לציין דחיפות. שאלי את המשתמשת לבחור: low, medium, high, או critical."
+        if create_task and urgency not in ("low", "medium", "high", "critical"):
+            return f"שגיאה: דחיפות '{urgency}' לא תקינה. חייבת להיות אחת מ: low, medium, high, critical."
+        parsed_date = None
+        if due_date:
+            try:
+                parsed_date = date.fromisoformat(due_date)
+            except ValueError:
+                return f"שגיאה: תאריך '{due_date}' לא בפורמט תקין. השתמשי בפורמט YYYY-MM-DD."
+
         action = await issue_service.add_action_item(
             session, issue_report_id=issue_report_id,
             description=description, create_task=create_task,
+            task_description=task_description,
+            urgency=urgency or "medium", due_date=parsed_date,
         )
-        task_info = f", linked task_id={action.task_id}" if action.task_id else ""
-        return f"Action item created: id={action.id}, description='{description}'{task_info}"
+        task_info = f", משימה מקושרת id={action.task_id}" if action.task_id else ""
+        return f"פעולה נוצרה: id={action.id}, תיאור='{description}'{task_info}"
 
     @tool
     async def list_action_items(issue_report_id: int = 0, issue_name: str = "") -> str:
-        """List the action items (פעולות) of a specific issue report.
+        """List the action items of a specific issue report.
         Provide issue_report_id (numeric) OR issue_name (fuzzy matched against product_name) to identify the issue."""
         if not issue_report_id and not issue_name:
-            return "Error: provide either issue_report_id or issue_name to identify the issue."
+            return "שגיאה: יש לספק issue_report_id או issue_name כדי לזהות את התקלה."
 
         if issue_report_id:
             issue = await issue_service.get_issue_report(session, issue_report_id)
             if not issue:
-                return f"Error: Issue with id {issue_report_id} not found."
+                return f"שגיאה: תקלה עם id {issue_report_id} לא נמצאה."
         else:
             issues = await issue_service.list_issue_reports(session)
-            issue = None
-            for i in issues:
-                if issue_name in i.product_name or i.product_name in issue_name:
-                    issue = i
-                    break
-            if not issue:
+            matched = _fuzzy_match(issue_name, issues, key=lambda i: i.product_name)
+            if not matched:
                 available = ", ".join(f"[{i.id}] {i.product_name}" for i in issues[:10])
-                return f"Error: Issue '{issue_name}' not found. Available issues: {available}"
+                return f"שגיאה: תקלה '{issue_name}' לא נמצאה. תקלות זמינות: {available}"
+            issue = matched
 
         if not issue.action_items:
-            return f"Issue [{issue.id}] '{issue.product_name}' has no action items yet."
+            return f"לתקלה [{issue.id}] '{issue.product_name}' אין פעולות עדיין."
 
-        lines = [f"Action items for issue [{issue.id}] '{issue.product_name}':"]
+        lines = [f"פעולות לתקלה [{issue.id}] '{issue.product_name}':"]
         for a in issue.action_items:
             status_mark = "\u2705" if a.is_completed else "\u2b1c"
-            task_info = f" (linked task #{a.task_id})" if a.task_id else ""
+            task_info = f" (משימה מקושרת #{a.task_id})" if a.task_id else ""
             lines.append(f"{status_mark} [{a.id}] {a.description}{task_info}")
         return "\n".join(lines)
 
     @tool
     async def resolve_issue(issue_report_id: int) -> str:
         """Mark an issue report as resolved."""
-        issue = await issue_service.resolve_issue_report(session, issue_report_id)
-        return f"Issue {issue.id} marked as resolved."
+        try:
+            issue = await issue_service.resolve_issue_report(session, issue_report_id)
+            return f"תקלה {issue.id} סומנה כפתורה."
+        except ValueError as e:
+            return f"שגיאה: {e}"
+
+    @tool
+    async def reopen_issue(issue_report_id: int) -> str:
+        """Reopen a resolved issue report, marking it as open again."""
+        try:
+            issue = await issue_service.reopen_issue_report(session, issue_report_id)
+            return f"תקלה {issue.id} '{issue.product_name}' נפתחה מחדש."
+        except ValueError as e:
+            return f"שגיאה: {e}"
 
     return [
-        create_task, list_tasks, complete_task, reopen_task,
+        create_task, list_tasks, complete_task, reopen_task, update_task, delete_task,
         create_supplier, list_suppliers, update_supplier, delete_supplier,
         create_issue_report, list_issues, list_action_items,
-        add_action_item, resolve_issue,
+        add_action_item, resolve_issue, reopen_issue,
     ]

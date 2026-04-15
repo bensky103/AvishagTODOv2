@@ -1,6 +1,10 @@
+import re
+
 import structlog
 from telegram import Update
 from telegram.ext import Application, MessageHandler, CommandHandler, filters, ContextTypes
+
+from langchain_core.messages import HumanMessage, AIMessage
 
 from app.config import settings
 from app.database import async_session
@@ -9,7 +13,14 @@ from app.agent.agent import run_agent
 logger = structlog.get_logger("telegram")
 
 
-MAX_HISTORY_MESSAGES = 20
+MAX_HISTORY_TOKENS_ESTIMATE = 3000  # rough char-based estimate (1 token ≈ 4 chars)
+
+_BOLD_RE = re.compile(r"\*\*(.+?)\*\*")
+
+
+def _strip_markdown_bold(text: str) -> str:
+    """Convert **bold** markdown to plain text for Telegram."""
+    return _BOLD_RE.sub(r"\1", text)
 
 HELP_TEXT = r"""🤖 *בוטי \- עוזר ניהול רכש*
 
@@ -19,6 +30,7 @@ HELP_TEXT = r"""🤖 *בוטי \- עוזר ניהול רכש*
 • יצירת משימה חדשה
 • הצגת רשימת משימות \(פתוחות/סגורות\)
 • סימון משימה כהושלמה
+• עדכון או מחיקת משימה
 • פתיחה מחדש של משימה שהושלמה
 
 🏢 *ספקים*
@@ -58,6 +70,19 @@ async def handle_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     )
 
 
+def _trim_history(history: list, max_chars: int = MAX_HISTORY_TOKENS_ESTIMATE * 4) -> list:
+    """Trim history from the front to stay within approximate token budget."""
+    total = sum(len(m.content) for m in history)
+    while total > max_chars and len(history) >= 2:
+        removed = history.pop(0)
+        total -= len(removed.content)
+        # Always remove in pairs (human + ai) to keep conversation coherent
+        if history and isinstance(history[0], AIMessage):
+            removed2 = history.pop(0)
+            total -= len(removed2.content)
+    return history
+
+
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle incoming Telegram messages."""
     if update.effective_user.id != settings.telegram_allowed_user_id:
@@ -67,28 +92,32 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     user_message = update.message.text
     logger.info("message_received", text=user_message[:100])
 
+    # Send typing indicator while processing
+    await update.message.chat.send_action("typing")
+
     # Retrieve conversation history from context (in-memory, per user)
     if "history" not in context.user_data:
         context.user_data["history"] = []
-    history = context.user_data["history"]
+    history: list = context.user_data["history"]
 
     async with async_session() as session:
         try:
             response = await run_agent(session, user_message, history=history)
 
-            # Append this exchange to history for next turn
-            history.append(("human", user_message))
-            history.append(("ai", response))
+            # Append this exchange as proper message objects
+            history.append(HumanMessage(content=user_message))
+            history.append(AIMessage(content=response))
 
             # Trim to keep context window manageable
-            if len(history) > MAX_HISTORY_MESSAGES * 2:
-                history[:] = history[-(MAX_HISTORY_MESSAGES * 2):]
+            _trim_history(history)
 
-            await update.message.reply_text(response)
+            # Strip markdown bold (**text**) since Telegram plain text doesn't render it
+            clean_response = _strip_markdown_bold(response)
+            await update.message.reply_text(clean_response)
             logger.info("response_sent", length=len(response))
         except Exception as e:
             logger.error("agent_error", error=str(e))
-            await update.message.reply_text("\u05e9\u05d2\u05d9\u05d0\u05d4 \u05d1\u05e2\u05d9\u05d1\u05d5\u05d3 \u05d4\u05d4\u05d5\u05d3\u05e2\u05d4. \u05e0\u05e1\u05d9 \u05e9\u05d5\u05d1.")
+            await update.message.reply_text("שגיאה בעיבוד ההודעה. נסי שוב.")
 
 
 def create_bot_application() -> Application:

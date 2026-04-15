@@ -1,29 +1,59 @@
 import secrets
+import time
+
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 
 from app.config import settings
 
-# Simple token store (in-memory; single-user app)
-_valid_tokens: set[str] = set()
+TOKEN_TTL_SECONDS = 60 * 60 * 24 * 30  # 30 days
+MAX_TOKENS = 20  # prevent unbounded growth
+
+# Token store: token -> expiry timestamp
+_valid_tokens: dict[str, float] = {}
+
+
+def _cleanup_expired() -> None:
+    """Remove expired tokens."""
+    now = time.time()
+    expired = [t for t, exp in _valid_tokens.items() if exp <= now]
+    for t in expired:
+        del _valid_tokens[t]
 
 
 def verify_pin(pin: str) -> str | None:
     """Check PIN and return a session token if valid."""
     if pin == settings.pin_code:
+        _cleanup_expired()
+        # Enforce max tokens to prevent memory leak
+        if len(_valid_tokens) >= MAX_TOKENS:
+            # Remove the oldest token
+            oldest = min(_valid_tokens, key=_valid_tokens.get)
+            del _valid_tokens[oldest]
         token = secrets.token_urlsafe(32)
-        _valid_tokens.add(token)
+        _valid_tokens[token] = time.time() + TOKEN_TTL_SECONDS
         return token
     return None
 
 
 def check_token(token: str) -> bool:
-    return token in _valid_tokens
+    """Validate a token exists and is not expired."""
+    if not token or token not in _valid_tokens:
+        return False
+    if time.time() > _valid_tokens[token]:
+        del _valid_tokens[token]
+        return False
+    return True
+
+
+def invalidate_token(token: str) -> None:
+    """Remove a token (logout)."""
+    _valid_tokens.pop(token, None)
 
 
 class AuthMiddleware(BaseHTTPMiddleware):
-    EXEMPT_PATHS = {"/health", "/api/auth/verify"}
+    EXEMPT_PATHS = {"/health", "/api/auth/verify", "/api/auth/logout", "/api/auth/check"}
 
     async def dispatch(self, request: Request, call_next):
         path = request.url.path

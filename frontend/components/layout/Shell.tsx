@@ -299,7 +299,7 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
 }
 
 export function Shell({ children }: { children: ReactNode }) {
-  const { token } = useAuth();
+  const { authenticated } = useAuth();
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const sidebarWidth = collapsed ? SIDEBAR_NARROW : SIDEBAR_WIDE;
@@ -308,7 +308,7 @@ export function Shell({ children }: { children: ReactNode }) {
   if (pathname === "/login") return <>{children}</>;
 
   // While middleware handles the redirect, avoid rendering the shell without auth
-  if (!token) return null;
+  if (!authenticated) return null;
 
   return (
     <div className="min-h-screen bg-base">

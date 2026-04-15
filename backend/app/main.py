@@ -1,11 +1,11 @@
 from contextlib import asynccontextmanager
 
 import structlog
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 from app.api import tasks, suppliers, issues
-from app.auth import AuthMiddleware, verify_pin
+from app.auth import AuthMiddleware, verify_pin, invalidate_token, check_token
 from app.config import settings
 from app.logging_config import setup_logging
 
@@ -50,23 +50,35 @@ async def auth_verify(body: dict):
     token = verify_pin(pin)
     if not token:
         raise HTTPException(status_code=401, detail="Invalid PIN")
-    response = StarletteJSONResponse(content={"token": token})
+    response = StarletteJSONResponse(content={"ok": True})
     response.set_cookie(
         key="auth_token",
         value=token,
-        httponly=False,
+        httponly=True,
         samesite="lax",
         path="/",
         max_age=60 * 60 * 24 * 30,  # 30 days
     )
     return response
 
-# --- Global exception handler ---
-@app.exception_handler(ValueError)
-async def value_error_handler(request, exc):
-    logger.warning("value_error", path=str(request.url), detail=str(exc))
-    return JSONResponse(status_code=404, content={"detail": str(exc)})
+# --- Logout endpoint ---
+@app.post("/api/auth/logout")
+async def auth_logout(request: Request):
+    token = request.cookies.get("auth_token", "")
+    invalidate_token(token)
+    response = JSONResponse(content={"ok": True})
+    response.delete_cookie("auth_token", path="/")
+    return response
 
+# --- Auth check endpoint (replaces JS cookie reading for httponly) ---
+@app.get("/api/auth/check")
+async def auth_check(request: Request):
+    token = request.cookies.get("auth_token", "")
+    if check_token(token):
+        return {"authenticated": True}
+    return JSONResponse(status_code=401, content={"authenticated": False})
+
+# --- Global exception handler ---
 @app.exception_handler(Exception)
 async def generic_error_handler(request, exc):
     logger.error("unhandled_error", path=str(request.url), error=str(exc), type=type(exc).__name__)
