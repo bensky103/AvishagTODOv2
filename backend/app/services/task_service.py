@@ -103,16 +103,18 @@ async def update_task(session: AsyncSession, task_id: int, **kwargs) -> Task:
     task = await session.get(Task, task_id)
     if not task:
         raise ValueError(f"Task {task_id} not found")
-    for key, value in kwargs.items():
+    for key in kwargs:
         if key not in _UPDATABLE_FIELDS:
             raise ValueError(f"Cannot update field: {key}")
-        setattr(task, key, value)
-    # Validate: cannot have reminder without a due_date
-    # Check after applying all updates so both can be set together
-    effective_due_date = task.due_date
-    effective_reminder = task.reminder_enabled
+    # Validate BEFORE mutating: compute effective values from incoming kwargs
+    # falling back to the current row values.  Use `in kwargs` (not .get)
+    # so that an explicit PATCH of due_date=None is treated as a clear.
+    effective_due_date = kwargs["due_date"] if "due_date" in kwargs else task.due_date
+    effective_reminder = kwargs["reminder_enabled"] if "reminder_enabled" in kwargs else task.reminder_enabled
     if effective_reminder and not effective_due_date:
         raise HTTPException(status_code=422, detail="לא ניתן להפעיל תזכורת ללא תאריך יעד")
+    for key, value in kwargs.items():
+        setattr(task, key, value)
     await session.commit()
     await session.refresh(task)
     logger.info("task_updated", task_id=task_id)

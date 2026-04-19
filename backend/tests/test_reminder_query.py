@@ -1,13 +1,14 @@
 """Tests for reminder_service.list_due_reminders (requires DB session)."""
 
 import pytest
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from app.models.task import Task
 from app.services.reminder_service import list_due_reminders
 
 
-TODAY = date.today()
+TODAY = datetime.now(ZoneInfo("Asia/Jerusalem")).date()
 YESTERDAY = TODAY - timedelta(days=1)
 TOMORROW = TODAY + timedelta(days=1)
 
@@ -18,7 +19,7 @@ async def test_returns_reminder_enabled_due_today(session):
     session.add(task)
     await session.commit()
 
-    today_tasks, overdue_tasks = await list_due_reminders(session)
+    today_tasks, overdue_tasks = await list_due_reminders(session, TODAY)
     titles = [t.title for t in today_tasks]
     assert "Due today" in titles
     assert overdue_tasks == []
@@ -30,7 +31,7 @@ async def test_returns_overdue_task(session):
     session.add(task)
     await session.commit()
 
-    today_tasks, overdue_tasks = await list_due_reminders(session)
+    today_tasks, overdue_tasks = await list_due_reminders(session, TODAY)
     assert today_tasks == []
     assert any(t.title == "Overdue task" for t in overdue_tasks)
 
@@ -41,7 +42,7 @@ async def test_future_due_date_excluded(session):
     session.add(task)
     await session.commit()
 
-    today_tasks, overdue_tasks = await list_due_reminders(session)
+    today_tasks, overdue_tasks = await list_due_reminders(session, TODAY)
     all_titles = [t.title for t in today_tasks + overdue_tasks]
     assert "Future task" not in all_titles
 
@@ -52,7 +53,7 @@ async def test_completed_today_excluded(session):
     session.add(task)
     await session.commit()
 
-    today_tasks, overdue_tasks = await list_due_reminders(session)
+    today_tasks, overdue_tasks = await list_due_reminders(session, TODAY)
     all_titles = [t.title for t in today_tasks + overdue_tasks]
     assert "Completed today" not in all_titles
 
@@ -63,7 +64,7 @@ async def test_reminder_off_excluded_even_if_overdue(session):
     session.add(task)
     await session.commit()
 
-    today_tasks, overdue_tasks = await list_due_reminders(session)
+    today_tasks, overdue_tasks = await list_due_reminders(session, TODAY)
     all_titles = [t.title for t in today_tasks + overdue_tasks]
     assert "No reminder overdue" not in all_titles
 
@@ -75,7 +76,7 @@ async def test_today_tasks_sorted_by_urgency(session):
     session.add(Task(title="Critical today", urgency="critical", due_date=TODAY, reminder_enabled=True))
     await session.commit()
 
-    today_tasks, _ = await list_due_reminders(session)
+    today_tasks, _ = await list_due_reminders(session, TODAY)
     titles = [t.title for t in today_tasks]
     assert titles.index("Critical today") < titles.index("Low today")
 
@@ -87,6 +88,6 @@ async def test_overdue_tasks_sorted_oldest_first(session):
     session.add(Task(title="Newer overdue", urgency="medium", due_date=YESTERDAY, reminder_enabled=True))
     await session.commit()
 
-    _, overdue_tasks = await list_due_reminders(session)
+    _, overdue_tasks = await list_due_reminders(session, TODAY)
     titles = [t.title for t in overdue_tasks]
     assert titles.index("Older overdue") < titles.index("Newer overdue")

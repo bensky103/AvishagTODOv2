@@ -1,6 +1,6 @@
 """Daily reminder service — queries due tasks and sends a Telegram digest."""
 
-from datetime import datetime
+from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
 import structlog
@@ -16,10 +16,8 @@ _URGENCY_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3}
 _URGENCY_ICON = {"critical": "🔥", "high": "⚡", "medium": "🟡", "low": "·"}
 
 
-async def list_due_reminders(session: AsyncSession) -> tuple[list[Task], list[Task]]:
+async def list_due_reminders(session: AsyncSession, today_il: date) -> tuple[list[Task], list[Task]]:
     """Return (today_tasks, overdue_tasks) for tasks with reminders due."""
-    today_il = datetime.now(ZoneInfo("Asia/Jerusalem")).date()
-
     stmt = (
         select(Task)
         .where(Task.reminder_enabled == True)  # noqa: E712
@@ -48,7 +46,7 @@ async def list_due_reminders(session: AsyncSession) -> tuple[list[Task], list[Ta
 def format_reminder_message(
     today: list[Task],
     overdue: list[Task],
-    today_il,
+    today_il: date,
 ) -> str | None:
     """Format the Hebrew digest message, or None if nothing to send."""
     if not today and not overdue:
@@ -80,7 +78,7 @@ async def send_daily_reminder(bot_app, session_factory) -> None:
     try:
         today_il = datetime.now(ZoneInfo("Asia/Jerusalem")).date()
         async with session_factory() as session:
-            today, overdue = await list_due_reminders(session)
+            today, overdue = await list_due_reminders(session, today_il)
 
         message = format_reminder_message(today, overdue, today_il)
         if message is None:
