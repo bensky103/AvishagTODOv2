@@ -299,6 +299,8 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
                   <button
                     onClick={() => setTasksExpanded((v) => !v)}
                     title={tasksExpanded ? "כווץ" : "הרחב"}
+                    aria-expanded={tasksExpanded}
+                    aria-controls="tasks-subnav"
                     style={{
                       padding: "9px 12px 9px 4px",
                       background: "transparent",
@@ -325,7 +327,7 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
 
               {/* Sub-items — only when sidebar expanded and group expanded */}
               {!collapsed && tasksExpanded && (
-                <div style={{ paddingBottom: 4 }}>
+                <div id="tasks-subnav" style={{ paddingBottom: 4 }}>
                   {TASK_CATEGORIES.map((cat) => {
                     const subActive = tasksActive && activeCategoryParam === cat.value;
                     const count = catCounts[cat.value] ?? 0;

@@ -33,4 +33,6 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_index("ix_tasks_category", table_name="tasks")
     op.drop_column("tasks", "category")
-    op.execute("DROP TYPE IF EXISTS task_category_enum")
+    bind = op.get_bind()
+    if bind.dialect.name == "postgresql":
+        op.execute("DROP TYPE IF EXISTS task_category_enum")

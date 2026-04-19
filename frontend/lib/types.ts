@@ -1,6 +1,7 @@
 export type Urgency = "low" | "medium" | "high" | "critical";
 export type IssueStatus = "open" | "in_progress" | "resolved";
-export type TaskCategory = "work" | "vaad" | "personal";
+import type { TaskCategory } from "./taskCategories";
+export type { TaskCategory };
 
 export interface Task {
   id: number;

@@ -133,7 +133,11 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
           </label>
           <Select
             value={category}
-            onChange={(val) => setCategory(val as TaskCategory)}
+            onChange={(val) => {
+              if (TASK_CATEGORIES.some((c) => c.value === val)) {
+                setCategory(val as TaskCategory);
+              }
+            }}
             options={categoryOptions}
           />
         </div>
