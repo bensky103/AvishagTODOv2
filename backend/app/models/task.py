@@ -20,6 +20,7 @@ class Task(Base):
     )
     is_completed: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     reminder_enabled: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    is_recurring_monthly: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     category: Mapped[str] = mapped_column(
         Enum("work", "vaad", "personal", name="task_category_enum"),
         default="work",

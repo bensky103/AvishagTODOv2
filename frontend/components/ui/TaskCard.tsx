@@ -91,6 +91,9 @@ export function TaskCard({ task, onClick, onToggle }: TaskCardProps) {
           {task.reminder_enabled && (
             <span className="text-xs" title="תזכורת יומית פעילה">🔔</span>
           )}
+          {task.is_recurring_monthly && (
+            <span className="text-xs" title="משימה חודשית קבועה">⏰ קבועה</span>
+          )}
           <Badge variant={task.urgency}>
             {urgencyLabels[task.urgency]}
           </Badge>

@@ -11,6 +11,7 @@ export interface Task {
   urgency: Urgency;
   is_completed: boolean;
   reminder_enabled: boolean;
+  is_recurring_monthly: boolean;
   category: TaskCategory;
   created_at: string;
   completed_at: string | null;
@@ -56,6 +57,7 @@ export interface TaskCreate {
   due_date?: string;
   urgency?: Urgency;
   reminder_enabled?: boolean;
+  is_recurring_monthly?: boolean;
   category?: TaskCategory;
 }
 
@@ -65,6 +67,7 @@ export interface TaskUpdate {
   due_date?: string;
   urgency?: Urgency;
   reminder_enabled?: boolean;
+  is_recurring_monthly?: boolean;
   category?: TaskCategory;
 }
 

@@ -11,10 +11,17 @@ import type { TaskCategory } from "@/lib/taskCategories";
 import TaskForm from "./TaskForm";
 
 type StatusFilter = "open" | "completed";
+type RecurringFilter = "all" | "regular" | "recurring";
 
 const statusOptions = [
   { value: "open" as const, label: "פתוחות" },
   { value: "completed" as const, label: "הושלמו" },
+];
+
+const recurringOptions = [
+  { value: "all", label: "הכל" },
+  { value: "regular", label: "רגילות" },
+  { value: "recurring", label: "⏰ קבועות" },
 ];
 
 const categoryOptions = [
@@ -83,11 +90,33 @@ function TasksPageContent() {
     [searchParams, router]
   );
 
+  // recurring: URL param
+  const VALID_RECURRING: RecurringFilter[] = ["all", "regular", "recurring"];
+  const paramRecurring = searchParams.get("recurring") as RecurringFilter | null;
+  const recurringFilter: RecurringFilter =
+    paramRecurring && VALID_RECURRING.includes(paramRecurring) ? paramRecurring : "all";
+
+  const setRecurring = useCallback(
+    (val: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (val === "all") {
+        params.delete("recurring");
+      } else {
+        params.set("recurring", val);
+      }
+      const qs = params.toString();
+      router.replace(qs ? `?${qs}` : "?");
+    },
+    [searchParams, router]
+  );
+
   const [showCreate, setShowCreate] = useState(false);
   const [editingTask, setEditingTask] = useState<any>(null);
 
   const queryFilters: Record<string, string> = { status: statusFilter };
   if (categoryFilter !== "all") queryFilters.category = categoryFilter;
+  if (recurringFilter === "recurring") queryFilters.is_recurring_monthly = "true";
+  else if (recurringFilter === "regular") queryFilters.is_recurring_monthly = "false";
 
   const { data: tasks, isLoading } = useTasks(
     Object.keys(queryFilters).length > 0 ? queryFilters : undefined
@@ -115,6 +144,13 @@ function TasksPageContent() {
             options={statusOptions}
             selected={statusFilter}
             onChange={(val) => setStatus(val as StatusFilter)}
+            variant="header"
+          />
+          {/* Recurring filter row */}
+          <FilterChips
+            options={recurringOptions}
+            selected={recurringFilter}
+            onChange={setRecurring}
             variant="header"
           />
         </div>

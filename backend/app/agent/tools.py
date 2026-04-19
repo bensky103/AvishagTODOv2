@@ -54,12 +54,14 @@ def get_agent_tools(session: AsyncSession) -> list:
         due_date: str = "",
         urgency: str = "",
         category: str = "",
+        is_recurring_monthly: bool = False,
     ) -> str:
         """Create a new task. All parameters must be provided by the user - do NOT assume or guess values.
         title: required. description: optional. due_date: YYYY-MM-DD format, ask user if not specified.
         urgency: must be one of low/medium/high/critical, ask user if not specified.
         category: must be one of work/vaad/personal. If not specified by the user, ask which category the task belongs to.
-        Hebrew synonyms - work (עבודה/כובע עבודה), vaad (ועד בית/בניין), personal (אישי/פרטי)."""
+        Hebrew synonyms - work (עבודה/כובע עבודה), vaad (ועד בית/בניין), personal (אישי/פרטי).
+        is_recurring_monthly: set True for recurring monthly tasks (משימה קבועה/חוזרת). Requires due_date."""
         if not title.strip():
             return "שגיאה: חסר כותרת למשימה. שאלי את המשתמשת מה שם המשימה."
         if not urgency:
@@ -70,6 +72,8 @@ def get_agent_tools(session: AsyncSession) -> list:
             return "שגיאה: לא צוינה קטגוריה. שאלי את המשתמשת לאיזה כובע שייכת המשימה: עבודה (work), ועד בית (vaad), או אישי (personal)."
         if category not in ("work", "vaad", "personal"):
             return f"שגיאה: קטגוריה '{category}' לא תקינה. חייבת להיות אחת מ: work, vaad, personal."
+        if is_recurring_monthly and not due_date:
+            return "שגיאה: משימה קבועה דורשת תאריך יעד. שאלי את המשתמשת לאיזה תאריך להגדיר את המשימה."
         parsed_date = None
         if due_date:
             try:
@@ -79,6 +83,7 @@ def get_agent_tools(session: AsyncSession) -> list:
         t = await task_service.create_task(
             session, title=title.strip(), description=description or None,
             due_date=parsed_date, urgency=urgency, category=category,
+            is_recurring_monthly=is_recurring_monthly,
         )
         return f"משימה נוצרה: id={t.id}, כותרת='{t.title}', דחיפות={t.urgency}, קטגוריה={t.category}, תאריך יעד={t.due_date}"
 
@@ -460,11 +465,32 @@ def get_agent_tools(session: AsyncSession) -> list:
         except Exception as e:
             return f"שגיאה: {e}"
 
+    @tool
+    async def toggle_task_recurring(task_name: str, enabled: bool) -> str:
+        """Mark a task as a monthly recurring task (משימה קבועה) or remove that designation.
+        task_name: fuzzy match against existing task titles.
+        enabled: True to mark as recurring monthly, False to remove the recurring flag.
+        A task must have a due_date set before it can be marked as recurring.
+        """
+        result = await _resolve_task(task_name=task_name)
+        if isinstance(result, str):
+            return result
+        if enabled and not result.due_date:
+            return "לא ניתן להגדיר משימה קבועה ללא תאריך יעד"
+        try:
+            t = await task_service.update_task(session, result.id, is_recurring_monthly=enabled)
+            if enabled:
+                return f"משימה {t.title} סומנה כקבועה"
+            else:
+                return f"משימה {t.title} כבר אינה קבועה"
+        except Exception as e:
+            return f"שגיאה: {e}"
+
     return [
         create_task, list_tasks, complete_task, reopen_task, update_task, delete_task,
         update_task_category,
         create_supplier, list_suppliers, update_supplier, delete_supplier,
         create_issue_report, list_issues, list_action_items,
         add_action_item, resolve_issue, reopen_issue,
-        toggle_task_reminder,
+        toggle_task_reminder, toggle_task_recurring,
     ]

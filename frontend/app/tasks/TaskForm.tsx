@@ -34,6 +34,7 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
   const [dueDate, setDueDate] = useState("");
   const [urgency, setUrgency] = useState<Urgency>("medium");
   const [reminderEnabled, setReminderEnabled] = useState(false);
+  const [recurringMonthly, setRecurringMonthly] = useState(false);
   const [category, setCategory] = useState<TaskCategory>("work");
 
   const createTask = useCreateTask();
@@ -49,6 +50,7 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
       setDueDate(task.due_date || "");
       setUrgency(task.urgency as Urgency);
       setReminderEnabled(task.reminder_enabled ?? false);
+      setRecurringMonthly(task.is_recurring_monthly ?? false);
       setCategory((task.category as TaskCategory) ?? "work");
     } else {
       setTitle("");
@@ -56,6 +58,7 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
       setDueDate("");
       setUrgency("medium");
       setReminderEnabled(false);
+      setRecurringMonthly(false);
       setCategory("work");
     }
   }, [task, isOpen]);
@@ -67,6 +70,13 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
     }
   }, [dueDate, reminderEnabled]);
 
+  // Auto-disable recurring if due date is cleared
+  useEffect(() => {
+    if (dueDate === "" && recurringMonthly) {
+      setRecurringMonthly(false);
+    }
+  }, [dueDate, recurringMonthly]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
@@ -77,6 +87,7 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
       due_date: dueDate || undefined,
       urgency,
       reminder_enabled: reminderEnabled,
+      is_recurring_monthly: recurringMonthly,
       category,
     };
 
@@ -190,6 +201,32 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
               onChange={setReminderEnabled}
               disabled={!dueDate}
               label="תזכורת יומית"
+            />
+          </div>
+        </div>
+
+        {/* Recurring monthly toggle */}
+        <div className="bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <label
+                htmlFor="recurring-toggle"
+                className={`block text-sm font-body font-medium ${dueDate ? "text-white" : "text-text-secondary"}`}
+              >
+                ⏰ משימה חודשית חוזרת
+              </label>
+              <p className={`text-xs font-body mt-0.5 ${dueDate ? "text-text-secondary" : "text-text-secondary/60"}`}>
+                {dueDate
+                  ? "כל חודש ביום היעד תוחזר אוטומטית"
+                  : "בחר תאריך יעד כדי להגדיר משימה חוזרת"}
+              </p>
+            </div>
+            <Switch
+              id="recurring-toggle"
+              checked={recurringMonthly}
+              onChange={setRecurringMonthly}
+              disabled={!dueDate}
+              label="משימה חודשית חוזרת"
             />
           </div>
         </div>

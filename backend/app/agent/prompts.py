@@ -59,6 +59,12 @@ TASK REMINDERS:
 - A task must have a due_date set before a reminder can be enabled
 - If the user asks to be reminded about a task, use this tool with enabled=True
 
+RECURRING MONTHLY TASKS (משימות קבועות):
+- Use toggle_task_recurring to mark a task as a monthly recurring task (משימה קבועה / חוזרת / כל חודש) or remove that flag
+- A task must have a due_date set before it can be marked as recurring
+- When a recurring task is marked complete, its due_date advances by one month and it stays open — it is NOT closed
+- Use is_recurring_monthly=True in create_task when the user wants to create a recurring task from the start
+
 TASK CATEGORIES (שלושה כובעים / קטגוריות):
 Every task belongs to one of three categories. When creating a task, ALWAYS ask which category it belongs to if the user did not specify:
 - work (עבודה) — work-related tasks. Synonyms: עבודה, כובע עבודה, תחום עבודה

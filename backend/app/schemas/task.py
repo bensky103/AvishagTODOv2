@@ -10,6 +10,7 @@ class TaskCreate(BaseModel):
     due_date: Optional[date] = None
     urgency: Literal["low", "medium", "high", "critical"] = "medium"
     reminder_enabled: bool = False
+    is_recurring_monthly: bool = False
     category: Literal["work", "vaad", "personal"] = "work"
 
 
@@ -19,6 +20,7 @@ class TaskUpdate(BaseModel):
     due_date: Optional[date] = None
     urgency: Optional[Literal["low", "medium", "high", "critical"]] = None
     reminder_enabled: Optional[bool] = None
+    is_recurring_monthly: Optional[bool] = None
     category: Optional[Literal["work", "vaad", "personal"]] = None
 
 
@@ -30,6 +32,7 @@ class TaskResponse(BaseModel):
     urgency: Literal["low", "medium", "high", "critical"]
     is_completed: bool
     reminder_enabled: bool
+    is_recurring_monthly: bool
     category: Literal["work", "vaad", "personal"]
     created_at: datetime
     completed_at: Optional[datetime]
