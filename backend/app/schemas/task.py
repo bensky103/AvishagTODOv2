@@ -27,10 +27,10 @@ class TaskResponse(BaseModel):
     title: str
     description: Optional[str]
     due_date: Optional[date]
-    urgency: str
+    urgency: Literal["low", "medium", "high", "critical"]
     is_completed: bool
     reminder_enabled: bool
-    category: str
+    category: Literal["work", "vaad", "personal"]
     created_at: datetime
     completed_at: Optional[datetime]
     updated_at: Optional[datetime]
