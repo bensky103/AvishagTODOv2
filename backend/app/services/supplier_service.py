@@ -70,7 +70,7 @@ async def delete_supplier(session: AsyncSession, supplier_id: int) -> None:
         )
     )).scalar()
     if unresolved_count > 0:
-        raise ValueError(f"לא ניתן למחוק ספק עם {unresolved_count} תקלות פתוחות")
+        raise ValueError(f"לא ניתן למחוק ספק עם {unresolved_count} בעיות איכות פתוחות")
     # Delete resolved issues that reference this supplier before removing it
     resolved_issues = (await session.execute(
         select(IssueReport).where(
