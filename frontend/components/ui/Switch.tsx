@@ -27,6 +27,7 @@ export function Switch({ checked, onChange, disabled = false, label, id }: Switc
       disabled={disabled}
       onClick={() => !disabled && onChange(!checked)}
       onKeyDown={handleKeyDown}
+      dir="ltr"
       className={`
         relative inline-flex h-5 w-9 flex-shrink-0 items-center rounded-full
         transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/40
