@@ -1,33 +1,80 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useTasks, useToggleTask } from "@/lib/queries/tasks";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { FilterChips } from "@/components/ui/FilterChips";
 import { TaskCard } from "@/components/ui/TaskCard";
+import { TASK_CATEGORIES } from "@/lib/taskCategories";
+import type { TaskCategory } from "@/lib/taskCategories";
 import TaskForm from "./TaskForm";
 
-type FilterOption = "all" | "open" | "completed";
+type StatusFilter = "all" | "open" | "completed";
 
-const filterOptions = [
+const statusOptions = [
   { value: "all" as const, label: "הכל" },
   { value: "open" as const, label: "פתוחות" },
   { value: "completed" as const, label: "הושלמו" },
 ];
 
+const categoryOptions = [
+  { value: "all", label: "כל הכובעים" },
+  ...TASK_CATEGORIES.map((c) => ({ value: c.value, label: `${c.icon} ${c.label}` })),
+];
+
+const VALID_CATEGORIES: TaskCategory[] = ["work", "vaad", "personal"];
+
 export default function TasksPage() {
-  const [filter, setFilter] = useState<FilterOption>("all");
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center py-16">
+        <div className="w-7 h-7 border-2 border-emerald-800 border-t-emerald-400 rounded-full animate-spin" />
+      </div>
+    }>
+      <TasksPageContent />
+    </Suspense>
+  );
+}
+
+function TasksPageContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // category: URL param
+  const paramCategory = searchParams.get("category") as TaskCategory | "all" | null;
+  const categoryFilter: TaskCategory | "all" =
+    paramCategory && (VALID_CATEGORIES.includes(paramCategory as TaskCategory) || paramCategory === "all")
+      ? paramCategory
+      : "all";
+
+  const setCategory = useCallback(
+    (val: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (val === "all") {
+        params.delete("category");
+      } else {
+        params.set("category", val);
+      }
+      const qs = params.toString();
+      router.replace(qs ? `?${qs}` : "?");
+    },
+    [searchParams, router]
+  );
+
+  // status: local state (will be unified in next spec)
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [showCreate, setShowCreate] = useState(false);
   const [editingTask, setEditingTask] = useState<any>(null);
 
-  const statusFilter =
-    filter === "open"
-      ? { status: "open" }
-      : filter === "completed"
-      ? { status: "completed" }
-      : undefined;
+  const queryFilters: Record<string, string> = {};
+  if (statusFilter === "open") queryFilters.status = "open";
+  if (statusFilter === "completed") queryFilters.status = "completed";
+  if (categoryFilter !== "all") queryFilters.category = categoryFilter;
 
-  const { data: tasks, isLoading } = useTasks(statusFilter);
+  const { data: tasks, isLoading } = useTasks(
+    Object.keys(queryFilters).length > 0 ? queryFilters : undefined
+  );
   const toggleTask = useToggleTask();
 
   const openCount = tasks?.filter((t) => !t.is_completed).length ?? 0;
@@ -38,10 +85,18 @@ export default function TasksPage() {
         title="משימות"
         subtitle={`${openCount} משימות פתוחות`}
       >
+        {/* Category filter row */}
         <FilterChips
-          options={filterOptions}
-          selected={filter}
-          onChange={(val) => setFilter(val as FilterOption)}
+          options={categoryOptions}
+          selected={categoryFilter}
+          onChange={setCategory}
+          variant="header"
+        />
+        {/* Status filter row */}
+        <FilterChips
+          options={statusOptions}
+          selected={statusFilter}
+          onChange={(val) => setStatusFilter(val as StatusFilter)}
           variant="header"
         />
       </PageHeader>

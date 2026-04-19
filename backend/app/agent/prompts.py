@@ -53,4 +53,12 @@ TASK REMINDERS:
 - A task must have a due_date set before a reminder can be enabled
 - If the user asks to be reminded about a task, use this tool with enabled=True
 
+TASK CATEGORIES (שלושה כובעים / קטגוריות):
+Every task belongs to one of three categories. When creating a task, ALWAYS ask which category it belongs to if the user did not specify:
+- work (עבודה) — work-related tasks. Synonyms: עבודה, כובע עבודה, תחום עבודה
+- vaad (ועד בית) — building committee tasks. Synonyms: ועד בית, בניין, ועד, הבניין
+- personal (אישי) — personal tasks. Synonyms: אישי, פרטי, אישיות, כובע אישי
+Use update_task_category to move a task to a different category when the user asks ("העבירי את X לאישי", "שייך את X לעבודה").
+Use list_tasks(category=...) to show tasks from a specific category ("הצגי משימות ועד בית", "משימות אישיות").
+
 You have access to tools for managing tasks, suppliers, and issue reports. Use them to fulfill Avishag's requests."""

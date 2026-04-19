@@ -10,6 +10,7 @@ class TaskCreate(BaseModel):
     due_date: Optional[date] = None
     urgency: Literal["low", "medium", "high", "critical"] = "medium"
     reminder_enabled: bool = False
+    category: Literal["work", "vaad", "personal"] = "work"
 
 
 class TaskUpdate(BaseModel):
@@ -18,6 +19,7 @@ class TaskUpdate(BaseModel):
     due_date: Optional[date] = None
     urgency: Optional[Literal["low", "medium", "high", "critical"]] = None
     reminder_enabled: Optional[bool] = None
+    category: Optional[Literal["work", "vaad", "personal"]] = None
 
 
 class TaskResponse(BaseModel):
@@ -28,6 +30,7 @@ class TaskResponse(BaseModel):
     urgency: str
     is_completed: bool
     reminder_enabled: bool
+    category: str
     created_at: datetime
     completed_at: Optional[datetime]
     updated_at: Optional[datetime]

@@ -53,16 +53,23 @@ def get_agent_tools(session: AsyncSession) -> list:
         description: str = "",
         due_date: str = "",
         urgency: str = "",
+        category: str = "",
     ) -> str:
         """Create a new task. All parameters must be provided by the user - do NOT assume or guess values.
         title: required. description: optional. due_date: YYYY-MM-DD format, ask user if not specified.
-        urgency: must be one of low/medium/high/critical, ask user if not specified."""
+        urgency: must be one of low/medium/high/critical, ask user if not specified.
+        category: must be one of work/vaad/personal. If not specified by the user, ask which category the task belongs to.
+        Hebrew synonyms - work (עבודה/כובע עבודה), vaad (ועד בית/בניין), personal (אישי/פרטי)."""
         if not title.strip():
             return "שגיאה: חסר כותרת למשימה. שאלי את המשתמשת מה שם המשימה."
         if not urgency:
             return "שגיאה: לא צוינה דחיפות. שאלי את המשתמשת לבחור: low, medium, high, או critical."
         if urgency not in ("low", "medium", "high", "critical"):
             return f"שגיאה: דחיפות '{urgency}' לא תקינה. חייבת להיות אחת מ: low, medium, high, critical."
+        if not category:
+            return "שגיאה: לא צוינה קטגוריה. שאלי את המשתמשת לאיזה כובע שייכת המשימה: עבודה (work), ועד בית (vaad), או אישי (personal)."
+        if category not in ("work", "vaad", "personal"):
+            return f"שגיאה: קטגוריה '{category}' לא תקינה. חייבת להיות אחת מ: work, vaad, personal."
         parsed_date = None
         if due_date:
             try:
@@ -71,17 +78,19 @@ def get_agent_tools(session: AsyncSession) -> list:
                 return f"שגיאה: תאריך '{due_date}' לא בפורמט תקין. השתמשי בפורמט YYYY-MM-DD."
         t = await task_service.create_task(
             session, title=title.strip(), description=description or None,
-            due_date=parsed_date, urgency=urgency,
+            due_date=parsed_date, urgency=urgency, category=category,
         )
-        return f"משימה נוצרה: id={t.id}, כותרת='{t.title}', דחיפות={t.urgency}, תאריך יעד={t.due_date}"
+        return f"משימה נוצרה: id={t.id}, כותרת='{t.title}', דחיפות={t.urgency}, קטגוריה={t.category}, תאריך יעד={t.due_date}"
 
     @tool
     async def list_tasks(
         status: str = "",
         urgency: str = "",
         due_before: str = "",
+        category: str = "",
     ) -> str:
-        """List tasks with optional filters. status: 'open' or 'completed'. urgency: low/medium/high/critical. due_before: YYYY-MM-DD."""
+        """List tasks with optional filters. status: 'open' or 'completed'. urgency: low/medium/high/critical. due_before: YYYY-MM-DD.
+        category: work/vaad/personal — filter by hat/category. Leave empty for all categories."""
         parsed_date = None
         if due_before:
             try:
@@ -93,13 +102,14 @@ def get_agent_tools(session: AsyncSession) -> list:
             status=status or None,
             urgency=urgency or None,
             due_before=parsed_date,
+            category=category or None,
         )
         if not tasks:
             return "לא נמצאו משימות התואמות את הסינון."
         lines = []
         for t in tasks:
             status_mark = "\u2705" if t.is_completed else "\u2b1c"
-            lines.append(f"{status_mark} [{t.id}] {t.title} (דחיפות={t.urgency}, תאריך יעד={t.due_date})")
+            lines.append(f"{status_mark} [{t.id}] {t.title} (דחיפות={t.urgency}, קטגוריה={t.category}, תאריך יעד={t.due_date})")
         return "\n".join(lines)
 
     async def _resolve_task(task_id: int = 0, task_name: str = "") -> Task | str:
@@ -403,6 +413,24 @@ def get_agent_tools(session: AsyncSession) -> list:
             return f"שגיאה: {e}"
 
     @tool
+    async def update_task_category(task_name: str, category: str) -> str:
+        """Move a task to a different category (hat). Fuzzy-matches the task by name.
+        category: must be one of work/vaad/personal.
+        Hebrew synonyms — work (עבודה/כובע עבודה), vaad (ועד בית/בניין), personal (אישי/פרטי)."""
+        if category not in ("work", "vaad", "personal"):
+            return f"שגיאה: קטגוריה '{category}' לא תקינה. חייבת להיות אחת מ: work, vaad, personal."
+        result = await _resolve_task(task_name=task_name)
+        if isinstance(result, str):
+            return result
+        try:
+            t = await task_service.update_task(session, result.id, category=category)
+            category_labels = {"work": "עבודה", "vaad": "ועד בית", "personal": "אישי"}
+            label = category_labels.get(category, category)
+            return f"משימה '{t.title}' הועברה לקטגוריה {label}."
+        except Exception as e:
+            return f"שגיאה: {e}"
+
+    @tool
     async def toggle_task_reminder(task_name: str, enabled: bool) -> str:
         """Turn the daily 09:00 reminder on or off for a task.
         task_name: fuzzy match against existing task titles.
@@ -424,6 +452,7 @@ def get_agent_tools(session: AsyncSession) -> list:
 
     return [
         create_task, list_tasks, complete_task, reopen_task, update_task, delete_task,
+        update_task_category,
         create_supplier, list_suppliers, update_supplier, delete_supplier,
         create_issue_report, list_issues, list_action_items,
         add_action_item, resolve_issue, reopen_issue,

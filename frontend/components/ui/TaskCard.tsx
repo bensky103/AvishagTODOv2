@@ -2,6 +2,7 @@
 
 import type { Task } from "@/lib/types";
 import { Badge } from "./Badge";
+import { TASK_CATEGORIES } from "@/lib/taskCategories";
 
 const urgencyBorderColors: Record<string, string> = {
   critical: "border-r-red-500",
@@ -93,6 +94,19 @@ export function TaskCard({ task, onClick, onToggle }: TaskCardProps) {
           <Badge variant={task.urgency}>
             {urgencyLabels[task.urgency]}
           </Badge>
+          {(() => {
+            const cat = TASK_CATEGORIES.find((c) => c.value === task.category);
+            if (!cat) return null;
+            return (
+              <span
+                className="text-xs font-body px-2 py-0.5 rounded-md"
+                style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.55)" }}
+                title={cat.label}
+              >
+                {cat.icon} {cat.label}
+              </span>
+            );
+          })()}
         </div>
       </div>
     </div>

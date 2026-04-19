@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, Suspense, type ReactNode } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { BottomNav } from "./BottomNav";
 import { useTasks } from "@/lib/queries/tasks";
 import { useIssues } from "@/lib/queries/issues";
 import { useSuppliers } from "@/lib/queries/suppliers";
 import { useAuth } from "@/lib/auth";
 import { colors, brandGradient, tint, SIDEBAR_WIDE, SIDEBAR_NARROW } from "@/lib/theme";
+import { TASK_CATEGORIES } from "@/lib/taskCategories";
 
 const C = {
   bg: colors.sidebarBg,
@@ -38,18 +39,14 @@ const mainNav = [
     ),
     badgeKey: null,
   },
-  {
-    href: "/tasks",
-    label: "משימות",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="9 11 12 14 22 4" />
-        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
-      </svg>
-    ),
-    badgeKey: "tasks" as const,
-  },
 ];
+
+const tasksIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="9 11 12 14 22 4" />
+    <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+  </svg>
+);
 
 const managementNav = [
   {
@@ -79,19 +76,43 @@ const managementNav = [
 
 function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { data: tasks } = useTasks();
   const { data: issues } = useIssues();
   const { data: suppliers } = useSuppliers();
 
+  const [tasksExpanded, setTasksExpanded] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    const stored = localStorage.getItem("sidebar_tasks_expanded");
+    return stored === null ? true : stored === "true";
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("sidebar_tasks_expanded", String(tasksExpanded));
+    }
+  }, [tasksExpanded]);
+
   const openTasks = tasks?.filter((t) => !t.is_completed).length ?? 0;
   const openIssues = issues?.filter((i) => i.status !== "resolved").length ?? 0;
   const supplierCount = suppliers?.length ?? 0;
+
+  // Per-category open task counts
+  const catCounts = Object.fromEntries(
+    TASK_CATEGORIES.map((c) => [
+      c.value,
+      tasks?.filter((t) => !t.is_completed && t.category === c.value).length ?? 0,
+    ])
+  );
 
   const badgeCounts: Record<string, number> = {
     tasks: openTasks,
     issues: openIssues,
     suppliers: supplierCount,
   };
+
+  // Active category from URL param
+  const activeCategoryParam = searchParams.get("category");
 
   function isActive(href: string) {
     if (href === "/") return pathname === "/";
@@ -217,6 +238,150 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
           <NavItem key={item.href} {...item} />
         ))}
 
+        {/* Tasks expandable group */}
+        {(() => {
+          const tasksActive = isActive("/tasks");
+          return (
+            <div>
+              {/* Parent row */}
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <Link
+                  href="/tasks"
+                  title={collapsed ? "משימות" : undefined}
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: collapsed ? 0 : 10,
+                    justifyContent: collapsed ? "center" : undefined,
+                    padding: collapsed ? "10px 0" : "9px 20px",
+                    paddingLeft: collapsed ? undefined : (tasksExpanded ? 16 : 20),
+                    position: "relative",
+                    transition: "all 0.2s",
+                    color: tasksActive ? C.textActive : C.textDefault,
+                    fontSize: 13,
+                    fontWeight: tasksActive ? 500 : 400,
+                    backgroundColor: tasksActive ? C.accentBg : undefined,
+                    textDecoration: "none",
+                    borderRight: tasksActive ? `3px solid ${C.accent}` : "3px solid transparent",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!tasksActive) {
+                      e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.03)";
+                      e.currentTarget.style.color = C.textHover;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!tasksActive) {
+                      e.currentTarget.style.backgroundColor = "";
+                      e.currentTarget.style.color = C.textDefault;
+                    }
+                  }}
+                >
+                  <span style={{ flexShrink: 0, display: "flex", color: tasksActive ? C.accent : "inherit" }}>{tasksIcon}</span>
+                  {!collapsed && <span>משימות</span>}
+                  {!collapsed && openTasks > 0 && (
+                    <span style={{
+                      marginRight: "auto",
+                      background: C.accentBadge,
+                      color: C.accentLight,
+                      fontSize: 10,
+                      fontWeight: 600,
+                      padding: "1px 7px",
+                      borderRadius: 10,
+                    }}>
+                      {openTasks}
+                    </span>
+                  )}
+                </Link>
+                {/* Chevron toggle — only in expanded sidebar */}
+                {!collapsed && (
+                  <button
+                    onClick={() => setTasksExpanded((v) => !v)}
+                    title={tasksExpanded ? "כווץ" : "הרחב"}
+                    style={{
+                      padding: "9px 12px 9px 4px",
+                      background: "transparent",
+                      border: "none",
+                      cursor: "pointer",
+                      color: C.textMuted,
+                      display: "flex",
+                      alignItems: "center",
+                      flexShrink: 0,
+                      transition: "color 0.15s",
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = C.textHover; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = C.textMuted; }}
+                  >
+                    <svg
+                      width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                      style={{ transform: tasksExpanded ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}
+                    >
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+
+              {/* Sub-items — only when sidebar expanded and group expanded */}
+              {!collapsed && tasksExpanded && (
+                <div style={{ paddingBottom: 4 }}>
+                  {TASK_CATEGORIES.map((cat) => {
+                    const subActive = tasksActive && activeCategoryParam === cat.value;
+                    const count = catCounts[cat.value] ?? 0;
+                    return (
+                      <Link
+                        key={cat.value}
+                        href={`/tasks?category=${cat.value}`}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          padding: "6px 20px 6px 36px",
+                          fontSize: 12,
+                          fontWeight: subActive ? 500 : 400,
+                          color: subActive ? C.textActive : C.textMuted,
+                          backgroundColor: subActive ? C.accentBg : undefined,
+                          textDecoration: "none",
+                          borderRight: subActive ? `3px solid ${C.accent}` : "3px solid transparent",
+                          transition: "all 0.15s",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!subActive) {
+                            e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.03)";
+                            e.currentTarget.style.color = C.textHover;
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!subActive) {
+                            e.currentTarget.style.backgroundColor = "";
+                            e.currentTarget.style.color = C.textMuted;
+                          }
+                        }}
+                      >
+                        <span style={{ fontSize: 13 }}>{cat.icon}</span>
+                        <span style={{ flex: 1 }}>{cat.label}</span>
+                        {count > 0 && (
+                          <span style={{
+                            background: C.accentBadge,
+                            color: C.accentLight,
+                            fontSize: 10,
+                            fontWeight: 600,
+                            padding: "1px 6px",
+                            borderRadius: 8,
+                          }}>
+                            {count}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
         {/* Divider */}
         <div style={{ height: 1, background: C.border, margin: collapsed ? "8px 12px" : "8px 20px" }} />
 
@@ -308,7 +473,9 @@ export function Shell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-base">
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
+      <Suspense fallback={null}>
+        <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
+      </Suspense>
       <main
         className="pb-20 md:pb-6"
         style={{

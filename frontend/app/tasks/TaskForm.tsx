@@ -7,7 +7,8 @@ import { useToast } from "@/components/ui/Toast";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { Select } from "@/components/ui/Select";
 import { Switch } from "@/components/ui/Switch";
-import type { Task, Urgency } from "@/lib/types";
+import type { Task, Urgency, TaskCategory } from "@/lib/types";
+import { TASK_CATEGORIES } from "@/lib/taskCategories";
 
 const urgencyOptions = [
   { value: "low", label: "נמוך" },
@@ -15,6 +16,11 @@ const urgencyOptions = [
   { value: "high", label: "גבוה" },
   { value: "critical", label: "קריטי" },
 ];
+
+const categoryOptions = TASK_CATEGORIES.map((c) => ({
+  value: c.value,
+  label: `${c.icon} ${c.label}`,
+}));
 
 interface TaskFormProps {
   isOpen: boolean;
@@ -28,6 +34,7 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
   const [dueDate, setDueDate] = useState("");
   const [urgency, setUrgency] = useState<Urgency>("medium");
   const [reminderEnabled, setReminderEnabled] = useState(false);
+  const [category, setCategory] = useState<TaskCategory>("work");
 
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
@@ -42,12 +49,14 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
       setDueDate(task.due_date || "");
       setUrgency(task.urgency as Urgency);
       setReminderEnabled(task.reminder_enabled ?? false);
+      setCategory((task.category as TaskCategory) ?? "work");
     } else {
       setTitle("");
       setDescription("");
       setDueDate("");
       setUrgency("medium");
       setReminderEnabled(false);
+      setCategory("work");
     }
   }, [task, isOpen]);
 
@@ -68,6 +77,7 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
       due_date: dueDate || undefined,
       urgency,
       reminder_enabled: reminderEnabled,
+      category,
     };
 
     if (isEditing && task) {
@@ -113,6 +123,18 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
             placeholder="שם המשימה"
             className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent"
             autoFocus
+          />
+        </div>
+
+        {/* Category */}
+        <div>
+          <label className="block text-sm font-body text-white mb-1">
+            קטגוריה
+          </label>
+          <Select
+            value={category}
+            onChange={(val) => setCategory(val as TaskCategory)}
+            options={categoryOptions}
           />
         </div>
 

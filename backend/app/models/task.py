@@ -20,6 +20,11 @@ class Task(Base):
     )
     is_completed: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     reminder_enabled: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    category: Mapped[str] = mapped_column(
+        Enum("work", "vaad", "personal", name="task_category_enum"),
+        default="work",
+        index=True,
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), index=True)
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True, onupdate=func.now())

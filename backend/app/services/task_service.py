@@ -19,6 +19,7 @@ async def create_task(
     due_date: Optional[date] = None,
     urgency: str = "medium",
     reminder_enabled: bool = False,
+    category: str = "work",
 ) -> Task:
     if reminder_enabled and not due_date:
         raise HTTPException(status_code=422, detail="לא ניתן להפעיל תזכורת ללא תאריך יעד")
@@ -28,6 +29,7 @@ async def create_task(
         due_date=due_date,
         urgency=urgency,
         reminder_enabled=reminder_enabled,
+        category=category,
     )
     session.add(task)
     await session.commit()
@@ -45,6 +47,7 @@ async def list_tasks(
     status: Optional[str] = None,
     urgency: Optional[str] = None,
     due_before: Optional[date] = None,
+    category: Optional[str] = None,
     skip: int = 0,
     limit: int = 100,
 ) -> list[Task]:
@@ -57,6 +60,8 @@ async def list_tasks(
         stmt = stmt.where(Task.urgency == urgency)
     if due_before:
         stmt = stmt.where(Task.due_date <= due_before)
+    if category and category != "all":
+        stmt = stmt.where(Task.category == category)
     stmt = stmt.order_by(Task.created_at.desc()).offset(skip).limit(limit)
     result = await session.execute(stmt)
     return list(result.scalars().all())
@@ -96,7 +101,7 @@ async def reopen_task(session: AsyncSession, task_id: int) -> Task:
     return task
 
 
-_UPDATABLE_FIELDS = {"title", "description", "due_date", "urgency", "reminder_enabled"}
+_UPDATABLE_FIELDS = {"title", "description", "due_date", "urgency", "reminder_enabled", "category"}
 
 
 async def update_task(session: AsyncSession, task_id: int, **kwargs) -> Task:

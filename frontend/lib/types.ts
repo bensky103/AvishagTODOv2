@@ -1,5 +1,6 @@
 export type Urgency = "low" | "medium" | "high" | "critical";
 export type IssueStatus = "open" | "in_progress" | "resolved";
+export type TaskCategory = "work" | "vaad" | "personal";
 
 export interface Task {
   id: number;
@@ -9,6 +10,7 @@ export interface Task {
   urgency: Urgency;
   is_completed: boolean;
   reminder_enabled: boolean;
+  category: TaskCategory;
   created_at: string;
   completed_at: string | null;
 }
@@ -50,6 +52,7 @@ export interface TaskCreate {
   due_date?: string;
   urgency?: Urgency;
   reminder_enabled?: boolean;
+  category?: TaskCategory;
 }
 
 export interface TaskUpdate {
@@ -58,6 +61,7 @@ export interface TaskUpdate {
   due_date?: string;
   urgency?: Urgency;
   reminder_enabled?: boolean;
+  category?: TaskCategory;
 }
 
 export interface SupplierCreate {

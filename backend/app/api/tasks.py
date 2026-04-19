@@ -17,6 +17,7 @@ async def create_task(data: TaskCreate, session: AsyncSession = Depends(get_sess
         session, title=data.title, description=data.description,
         due_date=data.due_date, urgency=data.urgency,
         reminder_enabled=data.reminder_enabled,
+        category=data.category,
     )
 
 
@@ -25,12 +26,14 @@ async def list_tasks(
     status: Optional[str] = None,
     urgency: Optional[str] = None,
     due_before: Optional[date] = None,
+    category: Optional[str] = None,
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
     session: AsyncSession = Depends(get_session),
 ):
     return await task_service.list_tasks(
-        session, status=status, urgency=urgency, due_before=due_before, skip=skip, limit=limit,
+        session, status=status, urgency=urgency, due_before=due_before,
+        category=category, skip=skip, limit=limit,
     )
 
 
