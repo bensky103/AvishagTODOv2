@@ -10,16 +10,15 @@ import { TASK_CATEGORIES } from "@/lib/taskCategories";
 import type { TaskCategory } from "@/lib/taskCategories";
 import TaskForm from "./TaskForm";
 
-type StatusFilter = "all" | "open" | "completed";
+type StatusFilter = "open" | "completed";
 
 const statusOptions = [
-  { value: "all" as const, label: "הכל" },
   { value: "open" as const, label: "פתוחות" },
   { value: "completed" as const, label: "הושלמו" },
 ];
 
 const categoryOptions = [
-  { value: "all", label: "כל הכובעים" },
+  { value: "all", label: "הכל" },
   ...TASK_CATEGORIES.map((c) => ({ value: c.value, label: `${c.icon} ${c.label}` })),
 ];
 
@@ -62,8 +61,8 @@ function TasksPageContent() {
     [searchParams, router]
   );
 
-  // status: URL param
-  const VALID_STATUSES: StatusFilter[] = ["all", "open", "completed"];
+  // status: URL param — defaults to "open" so category=all view never shows completed tasks
+  const VALID_STATUSES: StatusFilter[] = ["open", "completed"];
   const paramStatus = searchParams.get("status") as StatusFilter | null;
   const statusFilter: StatusFilter =
     paramStatus && VALID_STATUSES.includes(paramStatus)
@@ -87,9 +86,7 @@ function TasksPageContent() {
   const [showCreate, setShowCreate] = useState(false);
   const [editingTask, setEditingTask] = useState<any>(null);
 
-  const queryFilters: Record<string, string> = {};
-  if (statusFilter === "open") queryFilters.status = "open";
-  if (statusFilter === "completed") queryFilters.status = "completed";
+  const queryFilters: Record<string, string> = { status: statusFilter };
   if (categoryFilter !== "all") queryFilters.category = categoryFilter;
 
   const { data: tasks, isLoading } = useTasks(
