@@ -21,6 +21,9 @@ class IssueReport(Base):
         default="open",
     )
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    order_number: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    what_we_did: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    compensation_required: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True, onupdate=func.now())
 

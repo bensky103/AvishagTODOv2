@@ -13,6 +13,14 @@ from app.models.task import Task
 logger = structlog.get_logger("issue_service")
 
 
+def _null_if_blank(value: Optional[str]) -> Optional[str]:
+    """Return None if value is None or empty/whitespace, else return stripped value."""
+    if value is None:
+        return None
+    stripped = value.strip()
+    return stripped if stripped else None
+
+
 async def create_issue_report(
     session: AsyncSession,
     supplier_id: int,
@@ -20,13 +28,19 @@ async def create_issue_report(
     arrival_date: date,
     problem_description: str,
     sku: Optional[str] = None,
+    order_number: Optional[str] = None,
+    what_we_did: Optional[str] = None,
+    compensation_required: Optional[str] = None,
 ) -> IssueReport:
     issue = IssueReport(
         supplier_id=supplier_id,
         product_name=product_name,
-        sku=sku,
+        sku=_null_if_blank(sku),
         arrival_date=arrival_date,
         problem_description=problem_description,
+        order_number=_null_if_blank(order_number),
+        what_we_did=_null_if_blank(what_we_did),
+        compensation_required=_null_if_blank(compensation_required),
     )
     session.add(issue)
     await session.commit()
@@ -72,7 +86,10 @@ async def resolve_issue_report(session: AsyncSession, issue_id: int) -> IssueRep
     return await get_issue_report(session, issue_id)
 
 
-_UPDATABLE_FIELDS = {"product_name", "sku", "arrival_date", "problem_description", "status"}
+_UPDATABLE_FIELDS = {"product_name", "sku", "arrival_date", "problem_description", "status", "order_number", "what_we_did", "compensation_required"}
+
+
+_NULLABLE_TEXT_FIELDS = {"order_number", "what_we_did", "compensation_required", "sku"}
 
 
 async def update_issue(session: AsyncSession, issue_id: int, **kwargs) -> IssueReport:
@@ -82,6 +99,8 @@ async def update_issue(session: AsyncSession, issue_id: int, **kwargs) -> IssueR
     for key, value in kwargs.items():
         if key not in _UPDATABLE_FIELDS:
             raise ValueError(f"Cannot update field: {key}")
+        if key in _NULLABLE_TEXT_FIELDS:
+            value = _null_if_blank(value)
         setattr(issue, key, value)
     await session.commit()
     logger.info("issue_updated", issue_id=issue_id)

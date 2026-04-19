@@ -6,9 +6,11 @@ import { useIssues } from "@/lib/queries/issues";
 import { useSuppliers } from "@/lib/queries/suppliers";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { FilterChips } from "@/components/ui/FilterChips";
+import { ViewToggle, type ViewMode } from "@/components/ui/ViewToggle";
 import { Badge } from "@/components/ui/Badge";
 import IssueForm from "./IssueForm";
 import IssueDetail from "./IssueDetail";
+import type { IssueReport } from "@/lib/types";
 
 type StatusFilter = "open" | "in_progress" | "resolved";
 
@@ -19,6 +21,183 @@ const filterOptions = [
   { value: "in_progress" as const, label: "בטיפול" },
   { value: "resolved" as const, label: "נפתרו" },
 ];
+
+type SortKey = "arrival_date" | "supplier" | "order_number" | "problem_description" | "what_we_did" | "compensation_required" | "status";
+
+function IssueStatusBadge({ status }: { status: string }) {
+  return (
+    <Badge
+      variant={
+        status === "open" ? "open" : status === "in_progress" ? "in_progress" : "resolved"
+      }
+    >
+      {status === "open" ? "פתוחה" : status === "in_progress" ? "בטיפול" : "נפתרה"}
+    </Badge>
+  );
+}
+
+function TableView({
+  issues,
+  supplierMap,
+  onSelectIssue,
+}: {
+  issues: IssueReport[];
+  supplierMap: Record<number, string>;
+  onSelectIssue: (id: number) => void;
+}) {
+  const [sortKey, setSortKey] = useState<SortKey>("arrival_date");
+  const [sortAsc, setSortAsc] = useState(false); // default: newest first (desc)
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortAsc((v) => !v);
+    } else {
+      setSortKey(key);
+      setSortAsc(false);
+    }
+  };
+
+  const sorted = [...issues].sort((a, b) => {
+    let aVal: string | null | undefined;
+    let bVal: string | null | undefined;
+
+    if (sortKey === "arrival_date") {
+      aVal = a.arrival_date;
+      bVal = b.arrival_date;
+    } else if (sortKey === "supplier") {
+      aVal = supplierMap[a.supplier_id] ?? null;
+      bVal = supplierMap[b.supplier_id] ?? null;
+    } else if (sortKey === "order_number") {
+      aVal = a.order_number;
+      bVal = b.order_number;
+    } else if (sortKey === "problem_description") {
+      aVal = a.problem_description;
+      bVal = b.problem_description;
+    } else if (sortKey === "what_we_did") {
+      aVal = a.what_we_did;
+      bVal = b.what_we_did;
+    } else if (sortKey === "compensation_required") {
+      aVal = a.compensation_required;
+      bVal = b.compensation_required;
+    } else if (sortKey === "status") {
+      aVal = a.status;
+      bVal = b.status;
+    }
+
+    // Nulls sink to the bottom regardless of direction
+    if (!aVal && !bVal) return 0;
+    if (!aVal) return 1;
+    if (!bVal) return -1;
+
+    const cmp = aVal.localeCompare(bVal, "he");
+    return sortAsc ? cmp : -cmp;
+  });
+
+  function SortHeader({ col, label }: { col: SortKey; label: string }) {
+    const active = sortKey === col;
+    return (
+      <th
+        onClick={() => handleSort(col)}
+        className="px-3 py-2.5 text-right font-body text-xs font-medium text-text-secondary cursor-pointer select-none hover:text-text-primary transition-colors whitespace-nowrap"
+      >
+        <span className="inline-flex items-center gap-1">
+          {label}
+          {active && (
+            <svg
+              width="10"
+              height="10"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className={sortAsc ? "rotate-180" : ""}
+              style={{ transition: "transform 0.15s" }}
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          )}
+        </span>
+      </th>
+    );
+  }
+
+  return (
+    <div className="overflow-x-auto rounded-xl border border-white/[0.05] shadow-card">
+      <table className="w-full min-w-[700px] border-collapse">
+        <thead>
+          <tr className="bg-surface border-b border-white/[0.05]">
+            <SortHeader col="arrival_date" label="תאריך" />
+            <SortHeader col="supplier" label="ספק" />
+            <SortHeader col="order_number" label="מס׳ הזמנה" />
+            <SortHeader col="problem_description" label="תיאור הבעיה" />
+            <SortHeader col="what_we_did" label="מה עשינו" />
+            <SortHeader col="compensation_required" label="פיצוי נדרש" />
+            <SortHeader col="status" label="סטטוס" />
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((issue, idx) => (
+            <tr
+              key={issue.id}
+              onClick={() => onSelectIssue(issue.id)}
+              className={`cursor-pointer border-b border-white/[0.03] hover:bg-white/[0.03] transition-colors ${
+                idx % 2 === 1 ? "bg-white/[0.01]" : ""
+              }`}
+            >
+              <td className="px-3 py-2.5 text-xs font-body text-text-secondary whitespace-nowrap">
+                {new Date(issue.arrival_date).toLocaleDateString("he-IL")}
+              </td>
+              <td className="px-3 py-2.5 text-xs font-body text-text-primary whitespace-nowrap">
+                {supplierMap[issue.supplier_id] || "—"}
+              </td>
+              <td className="px-3 py-2.5 text-xs font-body text-text-primary whitespace-nowrap">
+                {issue.order_number || <span className="text-text-secondary">—</span>}
+              </td>
+              <td className="px-3 py-2.5 text-xs font-body text-text-primary max-w-[180px]">
+                <span
+                  className="block overflow-hidden text-ellipsis"
+                  style={{
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                  }}
+                >
+                  {issue.problem_description}
+                </span>
+              </td>
+              <td className="px-3 py-2.5 text-xs font-body text-text-secondary max-w-[160px]">
+                {issue.what_we_did ? (
+                  <span
+                    className="block overflow-hidden text-ellipsis"
+                    style={{
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {issue.what_we_did}
+                  </span>
+                ) : (
+                  <span className="text-text-secondary">—</span>
+                )}
+              </td>
+              <td className="px-3 py-2.5 text-xs font-body text-text-primary whitespace-nowrap">
+                {issue.compensation_required || <span className="text-text-secondary">—</span>}
+              </td>
+              <td className="px-3 py-2.5">
+                <IssueStatusBadge status={issue.status} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
 export default function IssuesPage() {
   return (
@@ -38,11 +217,21 @@ function IssuesPageContent() {
   const paramFilter = searchParams.get("status") as StatusFilter | null;
   const filter: StatusFilter = paramFilter && VALID_FILTERS.includes(paramFilter) ? paramFilter : "open";
 
+  const rawView = searchParams.get("view");
+  const view: ViewMode = rawView === "table" ? "table" : "cards";
+
   const setFilter = useCallback((val: StatusFilter) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("status", val);
     router.replace(`?${params.toString()}`);
   }, [searchParams, router]);
+
+  const setView = useCallback((val: ViewMode) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("view", val);
+    router.replace(`?${params.toString()}`);
+  }, [searchParams, router]);
+
   const [showCreate, setShowCreate] = useState(false);
   const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null);
 
@@ -56,13 +245,16 @@ function IssuesPageContent() {
 
   return (
     <div className="min-h-screen">
-      <PageHeader title="תקלות">
-        <FilterChips
-          options={filterOptions}
-          selected={filter}
-          onChange={(val) => setFilter(val as StatusFilter)}
-          variant="header"
-        />
+      <PageHeader title="בעיות איכות">
+        <div className="flex items-center gap-3">
+          <ViewToggle value={view} onChange={setView} />
+          <FilterChips
+            options={filterOptions}
+            selected={filter}
+            onChange={(val) => setFilter(val as StatusFilter)}
+            variant="header"
+          />
+        </div>
       </PageHeader>
 
       <div className="max-w-5xl mx-auto p-4 md:p-6 -mt-4 space-y-2.5">
@@ -79,8 +271,14 @@ function IssuesPageContent() {
                 <line x1="12" y1="17" x2="12.01" y2="17" />
               </svg>
             </div>
-            <p className="text-text-secondary font-body text-sm">אין תקלות</p>
+            <p className="text-text-secondary font-body text-sm">אין בעיות איכות</p>
           </div>
+        ) : view === "table" ? (
+          <TableView
+            issues={issues ?? []}
+            supplierMap={supplierMap}
+            onSelectIssue={setSelectedIssueId}
+          />
         ) : (
           issues?.map((issue) => {
             const completedActions =
@@ -154,7 +352,7 @@ function IssuesPageContent() {
           boxShadow: "0 4px 14px rgba(20,168,122,0.35)",
         }}
       >
-        הוסף תקלה
+        הוסף בעיה
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <line x1="12" y1="5" x2="12" y2="19" />
           <line x1="5" y1="12" x2="19" y2="12" />

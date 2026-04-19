@@ -20,6 +20,9 @@ async def create_issue(data: IssueReportCreate, session: AsyncSession = Depends(
         session, supplier_id=data.supplier_id, product_name=data.product_name,
         sku=data.sku, arrival_date=data.arrival_date,
         problem_description=data.problem_description,
+        order_number=data.order_number,
+        what_we_did=data.what_we_did,
+        compensation_required=data.compensation_required,
     )
 
 

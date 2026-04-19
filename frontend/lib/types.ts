@@ -41,6 +41,9 @@ export interface IssueReport {
   arrival_date: string;
   problem_description: string;
   status: IssueStatus;
+  order_number: string | null;
+  what_we_did: string | null;
+  compensation_required: string | null;
   created_at: string;
   resolved_at: string | null;
   action_items: ActionItem[];
@@ -83,6 +86,9 @@ export interface IssueCreate {
   sku?: string;
   arrival_date: string;
   problem_description: string;
+  order_number?: string;
+  what_we_did?: string;
+  compensation_required?: string;
 }
 
 export interface IssueUpdate {
@@ -90,6 +96,9 @@ export interface IssueUpdate {
   sku?: string;
   problem_description?: string;
   status?: IssueStatus;
+  order_number?: string;
+  what_we_did?: string;
+  compensation_required?: string;
 }
 
 export interface ActionItemCreate {

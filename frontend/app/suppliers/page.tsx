@@ -96,7 +96,7 @@ export default function SuppliersPage() {
                   <div className="flex items-center gap-3 mr-3">
                     {openCount > 0 ? (
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-red-500/10 text-red-400 ring-1 ring-red-500/20">
-                        {openCount} תקלות
+                        {openCount} בעיות
                       </span>
                     ) : (
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20">

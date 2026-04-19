@@ -109,7 +109,7 @@ export default function DashboardPage() {
           />
           <KpiCard
             value={openIssues.length}
-            label="תקלות פתוחות"
+            label="בעיות איכות פתוחות"
             variant="warning"
             href="/issues"
             icon={
@@ -170,7 +170,7 @@ export default function DashboardPage() {
                     <line x1="12" y1="17" x2="12.01" y2="17" />
                   </svg>
                 </div>
-                <h2 className="text-sm font-heading text-text-primary">תקלות אחרונות</h2>
+                <h2 className="text-sm font-heading text-text-primary">בעיות איכות אחרונות</h2>
               </div>
               {recentIssues.length > 0 && (
                 <Link href="/issues" className="text-xs font-body text-primary hover:text-primary-light font-medium">
@@ -180,7 +180,7 @@ export default function DashboardPage() {
             </div>
             <div className="p-4">
               {recentIssues.length === 0 ? (
-                <EmptyState message="אין תקלות פתוחות" icon="shield" />
+                <EmptyState message="אין בעיות איכות פתוחות" icon="shield" />
               ) : (
                 <div className="space-y-2">
                   {recentIssues.map((issue) => (
@@ -254,8 +254,8 @@ export default function DashboardPage() {
               </svg>
             </div>
             <div className="min-w-0">
-              <p className="text-xs md:text-sm font-heading text-text-primary group-hover:text-white transition-colors">תקלה חדשה</p>
-              <p className="text-[10px] md:text-xs font-body text-text-secondary mt-0.5 hidden md:block">דווח על תקלה</p>
+              <p className="text-xs md:text-sm font-heading text-text-primary group-hover:text-white transition-colors">בעיה חדשה</p>
+              <p className="text-[10px] md:text-xs font-body text-text-secondary mt-0.5 hidden md:block">דווח על בעיה</p>
             </div>
           </button>
         </div>

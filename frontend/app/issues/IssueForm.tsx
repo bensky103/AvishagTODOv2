@@ -24,6 +24,9 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
   const [sku, setSku] = useState("");
   const [arrivalDate, setArrivalDate] = useState("");
   const [problemDescription, setProblemDescription] = useState("");
+  const [orderNumber, setOrderNumber] = useState("");
+  const [whatWeDid, setWhatWeDid] = useState("");
+  const [compensationRequired, setCompensationRequired] = useState("");
   const [actions, setActions] = useState<PendingAction[]>([]);
   const [newActionDesc, setNewActionDesc] = useState("");
   const [newActionCreateTask, setNewActionCreateTask] = useState(false);
@@ -40,6 +43,9 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
       setSku("");
       setArrivalDate("");
       setProblemDescription("");
+      setOrderNumber("");
+      setWhatWeDid("");
+      setCompensationRequired("");
       setActions([]);
       setNewActionDesc("");
       setNewActionCreateTask(false);
@@ -74,6 +80,9 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
         sku: sku.trim() || undefined,
         arrival_date: arrivalDate,
         problem_description: problemDescription.trim(),
+        order_number: orderNumber.trim() || undefined,
+        what_we_did: whatWeDid.trim() || undefined,
+        compensation_required: compensationRequired.trim() || undefined,
       },
       {
         onSuccess: async (issue) => {
@@ -87,17 +96,17 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
                   })
                 )
               );
-              toast("התקלה נוצרה בהצלחה", "success");
+              toast("הבעיה נוצרה בהצלחה", "success");
             } catch {
-              toast("התקלה נוצרה אך חלק מהפעולות נכשלו", "error");
+              toast("הבעיה נוצרה אך חלק מהפעולות נכשלו", "error");
             }
             onClose();
           } else {
-            toast("התקלה נוצרה בהצלחה", "success");
+            toast("הבעיה נוצרה בהצלחה", "success");
             onClose();
           }
         },
-        onError: (err: Error) => toast(err.message || "שגיאה ביצירת התקלה", "error"),
+        onError: (err: Error) => toast(err.message || "שגיאה ביצירת הבעיה", "error"),
       }
     );
   };
@@ -109,7 +118,7 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
     problemDescription.trim();
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="תקלה חדשה">
+    <Modal isOpen={isOpen} onClose={onClose} title="בעיה חדשה">
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Supplier */}
         <div>
@@ -175,6 +184,50 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
             placeholder="תיאור הבעיה"
             rows={4}
             className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent resize-y"
+          />
+        </div>
+
+        {/* Order Number */}
+        <div>
+          <label className="block text-sm font-body text-white mb-1">
+            מספר הזמנה
+          </label>
+          <input
+            type="text"
+            value={orderNumber}
+            onChange={(e) => setOrderNumber(e.target.value)}
+            placeholder="מספר הזמנה (אופציונלי)"
+            maxLength={100}
+            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent"
+          />
+        </div>
+
+        {/* What We Did */}
+        <div>
+          <label className="block text-sm font-body text-white mb-1">
+            מה עשינו
+          </label>
+          <textarea
+            value={whatWeDid}
+            onChange={(e) => setWhatWeDid(e.target.value)}
+            placeholder="פירוט הטיפול (אופציונלי)"
+            rows={2}
+            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent resize-y"
+          />
+        </div>
+
+        {/* Compensation Required */}
+        <div>
+          <label className="block text-sm font-body text-white mb-1">
+            פיצוי נדרש
+          </label>
+          <input
+            type="text"
+            value={compensationRequired}
+            onChange={(e) => setCompensationRequired(e.target.value)}
+            placeholder="למשל: החלפה, זיכוי 200 ₪"
+            maxLength={255}
+            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent"
           />
         </div>
 
@@ -249,7 +302,7 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
             disabled={!isValid || createIssue.isPending}
             className="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-700 disabled:text-gray-500 text-white font-body font-medium py-2.5 rounded-xl transition-colors text-sm"
           >
-            {createIssue.isPending ? "יוצר..." : "יצירת תקלה"}
+            {createIssue.isPending ? "יוצר..." : "יצירת בעיה"}
           </button>
           <button
             type="button"

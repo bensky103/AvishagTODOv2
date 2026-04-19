@@ -271,15 +271,22 @@ def get_agent_tools(session: AsyncSession) -> list:
         problem_description: str,
         arrival_date: str = "",
         sku: str = "",
+        order_number: str = "",
+        what_we_did: str = "",
+        compensation_required: str = "",
     ) -> str:
-        """Create an issue report for a supplier problem. All required fields must be provided by the user - do NOT assume or guess values.
+        """Create a quality-issue report (בעיית איכות) for a supplier problem.
+        All required fields must be provided by the user - do NOT assume or guess values.
         supplier_name: required, matched fuzzily against existing suppliers.
         product_name: required - the name of the problematic product. Ask the user if not specified.
         problem_description: required.
         arrival_date: YYYY-MM-DD format, defaults to today if user doesn't specify.
-        sku: optional."""
+        sku: optional.
+        order_number: optional — order/PO number related to this issue.
+        what_we_did: optional — what action was already taken.
+        compensation_required: optional — e.g. replacement, credit amount."""
         if not supplier_name.strip():
-            return "שגיאה: חסר שם ספק. שאלי את המשתמשת לאיזה ספק התקלה שייכת."
+            return "שגיאה: חסר שם ספק. שאלי את המשתמשת לאיזה ספק הבעיה שייכת."
         if not product_name.strip():
             return "שגיאה: חסר שם מוצר. שאלי את המשתמשת מה שם המוצר (שם המוצר)."
         if not problem_description.strip():
@@ -300,8 +307,11 @@ def get_agent_tools(session: AsyncSession) -> list:
             session, supplier_id=matched.id, product_name=product_name.strip(),
             sku=sku or None, arrival_date=parsed_date,
             problem_description=problem_description.strip(),
+            order_number=order_number or None,
+            what_we_did=what_we_did or None,
+            compensation_required=compensation_required or None,
         )
-        return f"תקלה נוצרה: id={issue.id}, ספק='{matched.name}', מוצר='{product_name}', סטטוס={issue.status}"
+        return f"בעיה נוצרה: id={issue.id}, ספק='{matched.name}', מוצר='{product_name}', סטטוס={issue.status}"
 
     @tool
     async def list_issues(supplier_name: str = "", status: str = "") -> str:
@@ -319,7 +329,7 @@ def get_agent_tools(session: AsyncSession) -> list:
             session, supplier_id=supplier_id, status=status or None,
         )
         if not issues:
-            return "לא נמצאו תקלות התואמות את הסינון."
+            return "לא נמצאו בעיות איכות התואמות את הסינון."
         lines = []
         for i in issues:
             action_count = len(i.action_items) if i.action_items else 0
@@ -370,24 +380,24 @@ def get_agent_tools(session: AsyncSession) -> list:
         """List the action items of a specific issue report.
         Provide issue_report_id (numeric) OR issue_name (fuzzy matched against product_name) to identify the issue."""
         if not issue_report_id and not issue_name:
-            return "שגיאה: יש לספק issue_report_id או issue_name כדי לזהות את התקלה."
+            return "שגיאה: יש לספק issue_report_id או issue_name כדי לזהות את הבעיה."
 
         if issue_report_id:
             issue = await issue_service.get_issue_report(session, issue_report_id)
             if not issue:
-                return f"שגיאה: תקלה עם id {issue_report_id} לא נמצאה."
+                return f"שגיאה: בעיה עם id {issue_report_id} לא נמצאה."
         else:
             issues = await issue_service.list_issue_reports(session)
             matched = _fuzzy_match(issue_name, issues, key=lambda i: i.product_name)
             if not matched:
                 available = ", ".join(f"[{i.id}] {i.product_name}" for i in issues[:10])
-                return f"שגיאה: תקלה '{issue_name}' לא נמצאה. תקלות זמינות: {available}"
+                return f"שגיאה: בעיה '{issue_name}' לא נמצאה. בעיות זמינות: {available}"
             issue = matched
 
         if not issue.action_items:
-            return f"לתקלה [{issue.id}] '{issue.product_name}' אין פעולות עדיין."
+            return f"לבעיה [{issue.id}] '{issue.product_name}' אין פעולות עדיין."
 
-        lines = [f"פעולות לתקלה [{issue.id}] '{issue.product_name}':"]
+        lines = [f"פעולות לבעיה [{issue.id}] '{issue.product_name}':"]
         for a in issue.action_items:
             status_mark = "\u2705" if a.is_completed else "\u2b1c"
             task_info = f" (משימה מקושרת #{a.task_id})" if a.task_id else ""
@@ -399,7 +409,7 @@ def get_agent_tools(session: AsyncSession) -> list:
         """Mark an issue report as resolved."""
         try:
             issue = await issue_service.resolve_issue_report(session, issue_report_id)
-            return f"תקלה {issue.id} סומנה כפתורה."
+            return f"בעיה {issue.id} סומנה כנפתרה."
         except ValueError as e:
             return f"שגיאה: {e}"
 
@@ -408,7 +418,7 @@ def get_agent_tools(session: AsyncSession) -> list:
         """Reopen a resolved issue report, marking it as open again."""
         try:
             issue = await issue_service.reopen_issue_report(session, issue_report_id)
-            return f"תקלה {issue.id} '{issue.product_name}' נפתחה מחדש."
+            return f"בעיה {issue.id} '{issue.product_name}' נפתחה מחדש."
         except ValueError as e:
             return f"שגיאה: {e}"
 

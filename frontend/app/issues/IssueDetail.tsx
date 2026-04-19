@@ -38,15 +38,15 @@ export default function IssueDetail({ issueId, onClose }: IssueDetailProps) {
 
   const handleResolve = () => {
     resolveIssue.mutate(issueId, {
-      onSuccess: () => toast("התקלה סומנה כנפתרה", "success"),
-      onError: () => toast("שגיאה בעדכון התקלה", "error"),
+      onSuccess: () => toast("הבעיה סומנה כנפתרה", "success"),
+      onError: () => toast("שגיאה בעדכון הבעיה", "error"),
     });
   };
 
   const handleReopen = () => {
     reopenIssue.mutate(issueId, {
-      onSuccess: () => toast("התקלה נפתחה מחדש", "success"),
-      onError: () => toast("שגיאה בעדכון התקלה", "error"),
+      onSuccess: () => toast("הבעיה נפתחה מחדש", "success"),
+      onError: () => toast("שגיאה בעדכון הבעיה", "error"),
     });
   };
 
@@ -101,7 +101,7 @@ export default function IssueDetail({ issueId, onClose }: IssueDetailProps) {
           {/* Issue Info */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="font-heading text-text-primary">פרטי תקלה</h2>
+              <h2 className="font-heading text-text-primary">פרטי בעיית איכות</h2>
               <Badge
                 variant={
                   issue.status === "open"
@@ -148,6 +148,27 @@ export default function IssueDetail({ issueId, onClose }: IssueDetailProps) {
                 {issue.problem_description}
               </p>
             </div>
+
+            {issue.order_number && (
+              <div>
+                <p className="text-xs font-body text-text-secondary mb-1">מספר הזמנה</p>
+                <p className="text-sm font-body text-text-primary">{issue.order_number}</p>
+              </div>
+            )}
+
+            {issue.what_we_did && (
+              <div>
+                <p className="text-xs font-body text-text-secondary mb-1">מה עשינו</p>
+                <p className="text-sm font-body text-gray-300 leading-relaxed">{issue.what_we_did}</p>
+              </div>
+            )}
+
+            {issue.compensation_required && (
+              <div>
+                <p className="text-xs font-body text-text-secondary mb-1">פיצוי נדרש</p>
+                <p className="text-sm font-body text-text-primary">{issue.compensation_required}</p>
+              </div>
+            )}
           </div>
 
           {/* Action Buttons */}
@@ -279,14 +300,14 @@ export default function IssueDetail({ issueId, onClose }: IssueDetailProps) {
                 onClick={() => setConfirmDelete(true)}
                 className="w-full py-2 rounded-xl font-body text-sm text-red-400/60 hover:text-red-400 hover:bg-red-500/10 transition-colors"
               >
-                מחיקת תקלה
+                מחיקת בעיה
               </button>
             ) : (
               <div className="flex gap-3">
                 <button
                   onClick={() => {
                     deleteIssue.mutate(issue.id, {
-                      onSuccess: () => { toast("התקלה נמחקה", "success"); onClose(); },
+                      onSuccess: () => { toast("הבעיה נמחקה", "success"); onClose(); },
                       onError: (err: Error) => toast(err.message || "שגיאה במחיקה", "error"),
                     });
                   }}

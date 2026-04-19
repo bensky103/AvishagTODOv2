@@ -67,11 +67,11 @@ export default function SupplierDetail({
             {/* Issues */}
             <div>
               <h3 className="text-sm font-heading text-text-primary mb-3">
-                תקלות ({supplierIssues.length})
+                בעיות איכות ({supplierIssues.length})
               </h3>
               {supplierIssues.length === 0 ? (
                 <p className="text-sm font-body text-text-secondary">
-                  אין תקלות לספק זה
+                  אין בעיות איכות לספק זה
                 </p>
               ) : (
                 <div className="space-y-2">

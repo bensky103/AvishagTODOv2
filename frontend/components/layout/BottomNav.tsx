@@ -8,7 +8,7 @@ const tabs = [
   { href: "/", label: "דשבורד", icon: "📊" },
   { href: "/tasks", label: "משימות", icon: "✅" },
   { href: "/suppliers", label: "ספקים", icon: "🏢" },
-  { href: "/issues", label: "תקלות", icon: "⚠️" },
+  { href: "/issues", label: "בעיות איכות", icon: "⚠️" },
 ] as const;
 
 export function BottomNav() {
