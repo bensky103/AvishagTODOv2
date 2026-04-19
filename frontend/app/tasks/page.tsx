@@ -62,8 +62,28 @@ function TasksPageContent() {
     [searchParams, router]
   );
 
-  // status: local state (will be unified in next spec)
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  // status: URL param
+  const VALID_STATUSES: StatusFilter[] = ["all", "open", "completed"];
+  const paramStatus = searchParams.get("status") as StatusFilter | null;
+  const statusFilter: StatusFilter =
+    paramStatus && VALID_STATUSES.includes(paramStatus)
+      ? paramStatus
+      : "open";
+
+  const setStatus = useCallback(
+    (val: StatusFilter) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (val === "open") {
+        params.delete("status");
+      } else {
+        params.set("status", val);
+      }
+      const qs = params.toString();
+      router.replace(qs ? `?${qs}` : "?");
+    },
+    [searchParams, router]
+  );
+
   const [showCreate, setShowCreate] = useState(false);
   const [editingTask, setEditingTask] = useState<any>(null);
 
@@ -96,7 +116,7 @@ function TasksPageContent() {
         <FilterChips
           options={statusOptions}
           selected={statusFilter}
-          onChange={(val) => setStatusFilter(val as StatusFilter)}
+          onChange={(val) => setStatus(val as StatusFilter)}
           variant="header"
         />
       </PageHeader>
