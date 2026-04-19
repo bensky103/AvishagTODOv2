@@ -102,20 +102,22 @@ function TasksPageContent() {
         title="משימות"
         subtitle={`${openCount} משימות פתוחות`}
       >
-        {/* Category filter row */}
-        <FilterChips
-          options={categoryOptions}
-          selected={categoryFilter}
-          onChange={setCategory}
-          variant="header"
-        />
-        {/* Status filter row */}
-        <FilterChips
-          options={statusOptions}
-          selected={statusFilter}
-          onChange={(val) => setStatus(val as StatusFilter)}
-          variant="header"
-        />
+        <div className="flex flex-col gap-2">
+          {/* Category filter row */}
+          <FilterChips
+            options={categoryOptions}
+            selected={categoryFilter}
+            onChange={setCategory}
+            variant="header"
+          />
+          {/* Status filter row */}
+          <FilterChips
+            options={statusOptions}
+            selected={statusFilter}
+            onChange={(val) => setStatus(val as StatusFilter)}
+            variant="header"
+          />
+        </div>
       </PageHeader>
 
       <div className="max-w-5xl mx-auto p-4 md:p-6 -mt-4 space-y-2.5">
