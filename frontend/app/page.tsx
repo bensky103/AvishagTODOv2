@@ -4,23 +4,19 @@ import { useState } from "react";
 import Link from "next/link";
 import { useTasks, useToggleTask } from "@/lib/queries/tasks";
 import { useIssues } from "@/lib/queries/issues";
-import { useSuppliers } from "@/lib/queries/suppliers";
 import { KpiCard } from "@/components/ui/KpiCard";
 import { TaskCard } from "@/components/ui/TaskCard";
 import { Badge } from "@/components/ui/Badge";
 import { heroGradient, tint, colors } from "@/lib/theme";
 import TaskForm from "./tasks/TaskForm";
 import IssueForm from "./issues/IssueForm";
-import SupplierForm from "./suppliers/SupplierForm";
 
 export default function DashboardPage() {
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [showIssueForm, setShowIssueForm] = useState(false);
-  const [showSupplierForm, setShowSupplierForm] = useState(false);
 
   const { data: tasks, isLoading: loadingTasks } = useTasks();
   const { data: issues, isLoading: loadingIssues } = useIssues();
-  const { data: suppliers, isLoading: loadingSuppliers } = useSuppliers();
   const toggleTask = useToggleTask();
 
   const today = new Date();
@@ -57,7 +53,7 @@ export default function DashboardPage() {
 
   const recentIssues = openIssues.slice(0, 5);
 
-  if (loadingTasks || loadingIssues || loadingSuppliers) {
+  if (loadingTasks || loadingIssues) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-3">
@@ -87,7 +83,7 @@ export default function DashboardPage() {
       {/* Content */}
       <div className="max-w-5xl mx-auto px-4 md:px-6 mt-6">
         {/* KPI Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
           <KpiCard
             value={openTasks.length}
             label="משימות פתוחות"
@@ -121,18 +117,6 @@ export default function DashboardPage() {
                 <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
                 <line x1="12" y1="9" x2="12" y2="13" />
                 <line x1="12" y1="17" x2="12.01" y2="17" />
-              </svg>
-            }
-          />
-          <KpiCard
-            value={suppliers?.length || 0}
-            label="ספקים"
-            variant="success"
-            href="/suppliers"
-            icon={
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-                <polyline points="9 22 9 12 15 12 15 22" />
               </svg>
             }
           />
@@ -243,7 +227,7 @@ export default function DashboardPage() {
           <h2 className="text-sm font-heading text-text-primary">פעולות מהירות</h2>
           <div className="flex-1 h-px bg-white/[0.05]" />
         </div>
-        <div className="grid grid-cols-3 gap-3 md:gap-4 pb-8">
+        <div className="grid grid-cols-2 gap-3 md:gap-4 pb-8">
           <button
             onClick={() => setShowTaskForm(true)}
             className="bg-surface rounded-xl border border-white/[0.05] shadow-card p-3 md:p-5 flex flex-col md:flex-row items-center gap-2 md:gap-4 hover:border-white/[0.1] hover:shadow-card-hover transition-all duration-200 group text-center md:text-right"
@@ -274,28 +258,12 @@ export default function DashboardPage() {
               <p className="text-[10px] md:text-xs font-body text-text-secondary mt-0.5 hidden md:block">דווח על תקלה</p>
             </div>
           </button>
-          <button
-            onClick={() => setShowSupplierForm(true)}
-            className="bg-surface rounded-xl border border-white/[0.05] shadow-card p-3 md:p-5 flex flex-col md:flex-row items-center gap-2 md:gap-4 hover:border-white/[0.1] hover:shadow-card-hover transition-all duration-200 group text-center md:text-right"
-          >
-            <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: tint(colors.primary, 0.12) }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5eead4" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs md:text-sm font-heading text-text-primary group-hover:text-white transition-colors">ספק חדש</p>
-              <p className="text-[10px] md:text-xs font-body text-text-secondary mt-0.5 hidden md:block">הוסף ספק למערכת</p>
-            </div>
-          </button>
         </div>
       </div>
 
       {/* Create Forms */}
       <TaskForm isOpen={showTaskForm} onClose={() => setShowTaskForm(false)} />
       <IssueForm isOpen={showIssueForm} onClose={() => setShowIssueForm(false)} />
-      <SupplierForm isOpen={showSupplierForm} onClose={() => setShowSupplierForm(false)} />
     </div>
   );
 }
