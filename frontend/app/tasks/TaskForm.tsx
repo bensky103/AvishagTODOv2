@@ -6,6 +6,7 @@ import { useCreateTask, useUpdateTask } from "@/lib/queries/tasks";
 import { useToast } from "@/components/ui/Toast";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { Select } from "@/components/ui/Select";
+import { Switch } from "@/components/ui/Switch";
 import type { Task, Urgency } from "@/lib/types";
 
 const urgencyOptions = [
@@ -26,6 +27,7 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [urgency, setUrgency] = useState<Urgency>("medium");
+  const [reminderEnabled, setReminderEnabled] = useState(false);
 
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
@@ -39,13 +41,22 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
       setDescription(task.description || "");
       setDueDate(task.due_date || "");
       setUrgency(task.urgency as Urgency);
+      setReminderEnabled(task.reminder_enabled ?? false);
     } else {
       setTitle("");
       setDescription("");
       setDueDate("");
       setUrgency("medium");
+      setReminderEnabled(false);
     }
   }, [task, isOpen]);
+
+  // Auto-disable reminder if due date is cleared
+  useEffect(() => {
+    if (dueDate === "" && reminderEnabled) {
+      setReminderEnabled(false);
+    }
+  }, [dueDate, reminderEnabled]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +67,7 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
       description: description.trim() || undefined,
       due_date: dueDate || undefined,
       urgency,
+      reminder_enabled: reminderEnabled,
     };
 
     if (isEditing && task) {
@@ -128,6 +140,32 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
             onChange={(val) => setDueDate(val)}
             placeholder="בחר תאריך יעד"
           />
+        </div>
+
+        {/* Reminder toggle */}
+        <div className="bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <label
+                htmlFor="reminder-toggle"
+                className={`block text-sm font-body font-medium ${dueDate ? "text-white" : "text-text-secondary"}`}
+              >
+                🔔 תזכורת יומית
+              </label>
+              <p className={`text-xs font-body mt-0.5 ${dueDate ? "text-text-secondary" : "text-text-secondary/60"}`}>
+                {dueDate
+                  ? "שלח תזכורת בטלגרם ב-9:00 ביום היעד"
+                  : "בחר תאריך יעד כדי להפעיל תזכורת"}
+              </p>
+            </div>
+            <Switch
+              id="reminder-toggle"
+              checked={reminderEnabled}
+              onChange={setReminderEnabled}
+              disabled={!dueDate}
+              label="תזכורת יומית"
+            />
+          </div>
         </div>
 
         {/* Urgency */}

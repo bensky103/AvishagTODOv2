@@ -2,6 +2,7 @@ from datetime import UTC, date, datetime
 from typing import Optional
 
 import structlog
+from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,12 +18,16 @@ async def create_task(
     description: Optional[str] = None,
     due_date: Optional[date] = None,
     urgency: str = "medium",
+    reminder_enabled: bool = False,
 ) -> Task:
+    if reminder_enabled and not due_date:
+        raise HTTPException(status_code=422, detail="לא ניתן להפעיל תזכורת ללא תאריך יעד")
     task = Task(
         title=title,
         description=description,
         due_date=due_date,
         urgency=urgency,
+        reminder_enabled=reminder_enabled,
     )
     session.add(task)
     await session.commit()
@@ -91,7 +96,7 @@ async def reopen_task(session: AsyncSession, task_id: int) -> Task:
     return task
 
 
-_UPDATABLE_FIELDS = {"title", "description", "due_date", "urgency"}
+_UPDATABLE_FIELDS = {"title", "description", "due_date", "urgency", "reminder_enabled"}
 
 
 async def update_task(session: AsyncSession, task_id: int, **kwargs) -> Task:
@@ -102,6 +107,12 @@ async def update_task(session: AsyncSession, task_id: int, **kwargs) -> Task:
         if key not in _UPDATABLE_FIELDS:
             raise ValueError(f"Cannot update field: {key}")
         setattr(task, key, value)
+    # Validate: cannot have reminder without a due_date
+    # Check after applying all updates so both can be set together
+    effective_due_date = task.due_date
+    effective_reminder = task.reminder_enabled
+    if effective_reminder and not effective_due_date:
+        raise HTTPException(status_code=422, detail="לא ניתן להפעיל תזכורת ללא תאריך יעד")
     await session.commit()
     await session.refresh(task)
     logger.info("task_updated", task_id=task_id)

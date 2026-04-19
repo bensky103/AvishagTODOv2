@@ -16,6 +16,7 @@ async def create_task(data: TaskCreate, session: AsyncSession = Depends(get_sess
     return await task_service.create_task(
         session, title=data.title, description=data.description,
         due_date=data.due_date, urgency=data.urgency,
+        reminder_enabled=data.reminder_enabled,
     )
 
 

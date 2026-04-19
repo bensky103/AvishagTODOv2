@@ -87,6 +87,9 @@ export function TaskCard({ task, onClick, onToggle }: TaskCardProps) {
               {new Date(task.due_date).toLocaleDateString("he-IL")}
             </span>
           )}
+          {task.reminder_enabled && (
+            <span className="text-xs" title="תזכורת יומית פעילה">🔔</span>
+          )}
           <Badge variant={task.urgency}>
             {urgencyLabels[task.urgency]}
           </Badge>

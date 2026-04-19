@@ -9,6 +9,7 @@ class TaskCreate(BaseModel):
     description: Optional[str] = Field(None, max_length=5000)
     due_date: Optional[date] = None
     urgency: Literal["low", "medium", "high", "critical"] = "medium"
+    reminder_enabled: bool = False
 
 
 class TaskUpdate(BaseModel):
@@ -16,6 +17,7 @@ class TaskUpdate(BaseModel):
     description: Optional[str] = Field(None, max_length=5000)
     due_date: Optional[date] = None
     urgency: Optional[Literal["low", "medium", "high", "critical"]] = None
+    reminder_enabled: Optional[bool] = None
 
 
 class TaskResponse(BaseModel):
@@ -25,6 +27,7 @@ class TaskResponse(BaseModel):
     due_date: Optional[date]
     urgency: str
     is_completed: bool
+    reminder_enabled: bool
     created_at: datetime
     completed_at: Optional[datetime]
     updated_at: Optional[datetime]

@@ -19,6 +19,7 @@ class Task(Base):
         default="medium",
     )
     is_completed: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    reminder_enabled: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), index=True)
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True, onupdate=func.now())

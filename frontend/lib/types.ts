@@ -8,6 +8,7 @@ export interface Task {
   due_date: string | null;
   urgency: Urgency;
   is_completed: boolean;
+  reminder_enabled: boolean;
   created_at: string;
   completed_at: string | null;
 }
@@ -48,6 +49,7 @@ export interface TaskCreate {
   description?: string;
   due_date?: string;
   urgency?: Urgency;
+  reminder_enabled?: boolean;
 }
 
 export interface TaskUpdate {
@@ -55,6 +57,7 @@ export interface TaskUpdate {
   description?: string;
   due_date?: string;
   urgency?: Urgency;
+  reminder_enabled?: boolean;
 }
 
 export interface SupplierCreate {

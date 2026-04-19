@@ -402,9 +402,30 @@ def get_agent_tools(session: AsyncSession) -> list:
         except ValueError as e:
             return f"שגיאה: {e}"
 
+    @tool
+    async def toggle_task_reminder(task_name: str, enabled: bool) -> str:
+        """Turn the daily 09:00 reminder on or off for a task.
+        task_name: fuzzy match against existing task titles.
+        enabled: True to turn on, False to turn off.
+        """
+        result = await _resolve_task(task_name=task_name)
+        if isinstance(result, str):
+            return result
+        if enabled and not result.due_date:
+            return "לא ניתן להפעיל תזכורת ללא תאריך יעד"
+        try:
+            t = await task_service.update_task(session, result.id, reminder_enabled=enabled)
+            if enabled:
+                return f"תזכורת הופעלה למשימה {t.title}"
+            else:
+                return f"תזכורת בוטלה למשימה {t.title}"
+        except Exception as e:
+            return f"שגיאה: {e}"
+
     return [
         create_task, list_tasks, complete_task, reopen_task, update_task, delete_task,
         create_supplier, list_suppliers, update_supplier, delete_supplier,
         create_issue_report, list_issues, list_action_items,
         add_action_item, resolve_issue, reopen_issue,
+        toggle_task_reminder,
     ]

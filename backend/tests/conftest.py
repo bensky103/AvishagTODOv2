@@ -41,10 +41,11 @@ def override_session():
 
 @pytest.fixture
 def auth_token():
+    import time
     token = "test-token-12345"
-    _valid_tokens.add(token)
+    _valid_tokens[token] = time.time() + 3600  # expires in 1 hour
     yield token
-    _valid_tokens.discard(token)
+    _valid_tokens.pop(token, None)
 
 
 @pytest.fixture

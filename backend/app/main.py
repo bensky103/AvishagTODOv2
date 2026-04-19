@@ -19,10 +19,15 @@ async def lifespan(app: FastAPI):
     bot_app = None
     if settings.telegram_bot_token:
         from app.agent.bot import start_bot, stop_bot
+        from app.services.scheduler import start_scheduler, stop_scheduler
+        from app.database import async_session
         bot_app = await start_bot()
         logger.info("telegram_bot_started")
+        start_scheduler(bot_app, async_session)
     yield
     if bot_app:
+        from app.services.scheduler import stop_scheduler
+        stop_scheduler()
         await stop_bot(bot_app)
         logger.info("telegram_bot_stopped")
 
