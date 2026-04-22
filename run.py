@@ -30,8 +30,17 @@ env["NEXT_PUBLIC_BUILD_MODE"] = "export"
 subprocess.run("npm run build", cwd=FRONTEND, shell=True, check=True, env=env)
 print("  Frontend built.\n")
 
-# Run migrations
-subprocess.run("alembic upgrade head", cwd=BACKEND, shell=True, check=True, env=env)
+# Run migrations via the safe orchestrator (backup -> drift check -> upgrade).
+# Exits with:
+#   0 = success, 2 = drift, 3 = migration failed, 1 = other error.
+migrate_rc = subprocess.run(
+    [sys.executable, "-m", "app.scripts.safe_migrate"],
+    cwd=BACKEND,
+    env=env,
+).returncode
+if migrate_rc != 0:
+    print(f"\n  Migration halted (exit {migrate_rc}). Not starting backend.\n")
+    sys.exit(migrate_rc)
 
 # Start backend (serves API + static frontend)
 print("  App: http://localhost:8000\n")

@@ -19,7 +19,9 @@
       "Bash(where gh:*)",
       "Read(//c/Program Files/**)",
       "Read(//c/Users/Guy Bensky/AppData/Local/Programs/**)",
-      "Bash(python3 -c \"import json,sys; prs=json.load\\(sys.stdin\\); [print\\(f'#{p[\\\\\"number\\\\\"]} {p[\\\\\"title\\\\\"]} \\({p[\\\\\"state\\\\\"]}\\)'\\) for p in prs]\")"
+      "Bash(python3 -c \"import json,sys; prs=json.load\\(sys.stdin\\); [print\\(f'#{p[\\\\\"number\\\\\"]} {p[\\\\\"title\\\\\"]} \\({p[\\\\\"state\\\\\"]}\\)'\\) for p in prs]\")",
+      "Bash(alembic upgrade *)",
+      "Bash(sh -n entrypoint.sh)"
     ]
   }
 }
