@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.schemas.action_item import ActionItemResponse
 
@@ -15,6 +15,14 @@ class IssueReportCreate(BaseModel):
     order_number: Optional[str] = Field(None, max_length=100)
     what_we_did: Optional[str] = None
     compensation_required: Optional[str] = Field(None, max_length=255)
+
+    @field_validator("supplier_name")
+    @classmethod
+    def _supplier_name_not_blank(cls, v: str) -> str:
+        stripped = v.strip()
+        if not stripped:
+            raise ValueError("supplier_name must not be empty or whitespace-only")
+        return stripped
 
 
 class IssueReportUpdate(BaseModel):

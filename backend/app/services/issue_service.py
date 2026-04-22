@@ -33,7 +33,7 @@ async def create_issue_report(
     compensation_required: Optional[str] = None,
 ) -> IssueReport:
     issue = IssueReport(
-        supplier_name=supplier_name.strip(),
+        supplier_name=supplier_name,
         product_name=product_name,
         sku=_null_if_blank(sku),
         arrival_date=arrival_date,
