@@ -6,7 +6,7 @@ from langchain_core.tools import tool
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.task import Task
-from app.services import task_service, supplier_service, issue_service
+from app.services import task_service, issue_service
 
 
 def _fuzzy_match(query: str, candidates: list, key=None, threshold: float = 0.4):
@@ -209,67 +209,6 @@ def get_agent_tools(session: AsyncSession) -> list:
             return f"שגיאה: {e}"
 
     @tool
-    async def create_supplier(name: str, contact_info: str = "") -> str:
-        """Register a new supplier."""
-        try:
-            s = await supplier_service.create_supplier(session, name=name, contact_info=contact_info or None)
-            return f"ספק נוצר: id={s.id}, שם='{s.name}'"
-        except ValueError as e:
-            return f"שגיאה: {e}"
-
-    @tool
-    async def list_suppliers() -> str:
-        """List all registered suppliers."""
-        suppliers = await supplier_service.list_suppliers(session)
-        if not suppliers:
-            return "אין ספקים רשומים במערכת."
-        lines = [f"[{s.id}] {s.name} (איש קשר: {s.contact_info or 'לא צוין'})" for s in suppliers]
-        return "\n".join(lines)
-
-    async def _resolve_supplier(supplier_name: str):
-        """Find a supplier by fuzzy name match. Returns (supplier, None) or (None, error_string)."""
-        suppliers = await supplier_service.list_suppliers(session)
-        matched = _fuzzy_match(supplier_name, suppliers, key=lambda s: s.name)
-        if matched:
-            return matched, None
-        available = ", ".join(s.name for s in suppliers)
-        return None, f"ספק '{supplier_name}' לא נמצא. ספקים זמינים: {available}"
-
-    @tool
-    async def update_supplier(supplier_name: str, new_name: str = "", new_contact_info: str = "") -> str:
-        """Update an existing supplier's details. supplier_name is matched fuzzily. Provide new_name and/or new_contact_info to update."""
-        if not new_name and not new_contact_info:
-            return "שגיאה: יש לספק לפחות שדה אחד לעדכון (new_name או new_contact_info)."
-        matched, error = await _resolve_supplier(supplier_name)
-        if error:
-            return error
-        kwargs = {}
-        if new_name:
-            kwargs["name"] = new_name
-        if new_contact_info:
-            kwargs["contact_info"] = new_contact_info
-        updated = await supplier_service.update_supplier(session, matched.id, **kwargs)
-        return f"ספק עודכן: id={updated.id}, שם='{updated.name}', איש קשר='{updated.contact_info or 'לא צוין'}'"
-
-    @tool
-    async def delete_supplier(supplier_name: str, confirmed: bool = False) -> str:
-        """Delete a supplier by name. supplier_name is matched fuzzily.
-        If the supplier has unresolved issues, deletion will be blocked.
-        If the supplier has NO issues, you must first ask the user for confirmation, then call again with confirmed=True."""
-        matched, error = await _resolve_supplier(supplier_name)
-        if error:
-            return error
-
-        if not confirmed:
-            return f"ספק '{matched.name}' (id={matched.id}) יימחק לצמיתות. בקשי אישור מהמשתמשת ואז קראי שוב עם confirmed=True."
-
-        try:
-            await supplier_service.delete_supplier(session, matched.id)
-            return f"ספק '{matched.name}' (id={matched.id}) נמחק בהצלחה."
-        except ValueError as e:
-            return f"שגיאה: {e}"
-
-    @tool
     async def create_issue_report(
         supplier_name: str,
         product_name: str,
@@ -282,7 +221,7 @@ def get_agent_tools(session: AsyncSession) -> list:
     ) -> str:
         """Create a quality-issue report (בעיית איכות) for a supplier problem.
         All required fields must be provided by the user - do NOT assume or guess values.
-        supplier_name: required, matched fuzzily against existing suppliers.
+        supplier_name: required — the name of the supplier, stored as free text. Ask the user for the supplier's name if not provided.
         product_name: required - the name of the problematic product. Ask the user if not specified.
         problem_description: required.
         arrival_date: YYYY-MM-DD format, defaults to today if user doesn't specify.
@@ -297,10 +236,6 @@ def get_agent_tools(session: AsyncSession) -> list:
         if not problem_description.strip():
             return "שגיאה: חסר תיאור הבעיה. שאלי את המשתמשת לתאר את הבעיה."
 
-        matched, error = await _resolve_supplier(supplier_name)
-        if error:
-            return error
-
         parsed_date = date.today()
         if arrival_date:
             try:
@@ -309,29 +244,20 @@ def get_agent_tools(session: AsyncSession) -> list:
                 return f"שגיאה: תאריך '{arrival_date}' לא בפורמט תקין. השתמשי בפורמט YYYY-MM-DD."
 
         issue = await issue_service.create_issue_report(
-            session, supplier_id=matched.id, product_name=product_name.strip(),
+            session, supplier_name=supplier_name.strip(), product_name=product_name.strip(),
             sku=sku or None, arrival_date=parsed_date,
             problem_description=problem_description.strip(),
             order_number=order_number or None,
             what_we_did=what_we_did or None,
             compensation_required=compensation_required or None,
         )
-        return f"בעיה נוצרה: id={issue.id}, ספק='{matched.name}', מוצר='{product_name}', סטטוס={issue.status}"
+        return f"בעיה נוצרה: id={issue.id}, ספק='{supplier_name.strip()}', מוצר='{product_name}', סטטוס={issue.status}"
 
     @tool
     async def list_issues(supplier_name: str = "", status: str = "") -> str:
-        """List issue reports with optional filters. status: open/in_progress/resolved."""
-        suppliers = await supplier_service.list_suppliers(session)
-        supplier_names = {s.id: s.name for s in suppliers}
-
-        supplier_id = None
-        if supplier_name:
-            matched = _fuzzy_match(supplier_name, suppliers, key=lambda s: s.name)
-            if matched:
-                supplier_id = matched.id
-
+        """List issue reports with optional filters. supplier_name: case-insensitive substring match against the supplier name. status: open/in_progress/resolved."""
         issues = await issue_service.list_issue_reports(
-            session, supplier_id=supplier_id, status=status or None,
+            session, supplier_name=supplier_name or None, status=status or None,
         )
         if not issues:
             return "לא נמצאו בעיות איכות התואמות את הסינון."
@@ -339,7 +265,7 @@ def get_agent_tools(session: AsyncSession) -> list:
         for i in issues:
             action_count = len(i.action_items) if i.action_items else 0
             done_count = sum(1 for a in i.action_items if a.is_completed) if i.action_items else 0
-            s_name = supplier_names.get(i.supplier_id, f"לא ידוע({i.supplier_id})")
+            s_name = i.supplier_name
             lines.append(
                 f"[{i.id}] {i.product_name} (ספק={s_name}, סטטוס={i.status}, "
                 f"פעולות={done_count}/{action_count}, תאריך={i.arrival_date})"
@@ -489,7 +415,6 @@ def get_agent_tools(session: AsyncSession) -> list:
     return [
         create_task, list_tasks, complete_task, reopen_task, update_task, delete_task,
         update_task_category,
-        create_supplier, list_suppliers, update_supplier, delete_supplier,
         create_issue_report, list_issues, list_action_items,
         add_action_item, resolve_issue, reopen_issue,
         toggle_task_reminder, toggle_task_recurring,

@@ -24,7 +24,6 @@ DATE INTERPRETATION:
 - For any other relative date, calculate from today ({today.isoformat()})
 
 TOOL USAGE STRATEGY:
-- When a supplier name is mentioned, use fuzzy matching against the existing supplier list
 - When a task is referenced by name, use the task_name parameter — do NOT guess task_id
 - When creating a quality-issue report (בעיית איכות), ask if Avishag wants follow-up tasks created
 - When a message implies multiple actions (e.g., report a problem AND create a follow-up task), execute all of them in sequence
