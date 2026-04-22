@@ -4,7 +4,7 @@ import structlog
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
-from app.api import tasks, suppliers, issues
+from app.api import tasks, issues
 from app.auth import AuthMiddleware, verify_pin, invalidate_token, check_token
 from app.config import settings
 from app.logging_config import setup_logging
@@ -89,7 +89,6 @@ async def generic_error_handler(request, exc):
     return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
 app.include_router(tasks.router, prefix="/api/tasks", tags=["tasks"])
-app.include_router(suppliers.router, prefix="/api/suppliers", tags=["suppliers"])
 app.include_router(issues.router, prefix="/api/issues", tags=["issues"])
 
 

@@ -7,7 +7,7 @@ from app.schemas.action_item import ActionItemResponse
 
 
 class IssueReportCreate(BaseModel):
-    supplier_id: int
+    supplier_name: str = Field(..., min_length=1, max_length=255)
     product_name: str = Field(..., min_length=1, max_length=500)
     sku: Optional[str] = Field(None, max_length=100)
     arrival_date: date
@@ -29,7 +29,7 @@ class IssueReportUpdate(BaseModel):
 
 class IssueReportResponse(BaseModel):
     id: int
-    supplier_id: int
+    supplier_name: str
     product_name: str
     sku: Optional[str]
     arrival_date: date

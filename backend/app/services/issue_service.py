@@ -23,7 +23,7 @@ def _null_if_blank(value: Optional[str]) -> Optional[str]:
 
 async def create_issue_report(
     session: AsyncSession,
-    supplier_id: int,
+    supplier_name: str,
     product_name: str,
     arrival_date: date,
     problem_description: str,
@@ -33,7 +33,7 @@ async def create_issue_report(
     compensation_required: Optional[str] = None,
 ) -> IssueReport:
     issue = IssueReport(
-        supplier_id=supplier_id,
+        supplier_name=supplier_name.strip(),
         product_name=product_name,
         sku=_null_if_blank(sku),
         arrival_date=arrival_date,
@@ -60,14 +60,14 @@ async def get_issue_report(session: AsyncSession, issue_id: int) -> Optional[Iss
 
 async def list_issue_reports(
     session: AsyncSession,
-    supplier_id: Optional[int] = None,
+    supplier_name: Optional[str] = None,
     status: Optional[str] = None,
     skip: int = 0,
     limit: int = 100,
 ) -> list[IssueReport]:
     stmt = select(IssueReport).options(selectinload(IssueReport.action_items).selectinload(ActionItem.task))
-    if supplier_id is not None:
-        stmt = stmt.where(IssueReport.supplier_id == supplier_id)
+    if supplier_name:
+        stmt = stmt.where(IssueReport.supplier_name.ilike(f"%{supplier_name}%"))
     if status:
         stmt = stmt.where(IssueReport.status == status)
     stmt = stmt.order_by(IssueReport.created_at.desc()).offset(skip).limit(limit)

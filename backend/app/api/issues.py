@@ -6,18 +6,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_session
 from app.schemas.action_item import ActionItemCreate, ActionItemResponse
 from app.schemas.issue_report import IssueReportCreate, IssueReportResponse, IssueReportUpdate
-from app.services import issue_service, supplier_service
+from app.services import issue_service
 
 router = APIRouter()
 
 
 @router.post("/", response_model=IssueReportResponse, status_code=201)
 async def create_issue(data: IssueReportCreate, session: AsyncSession = Depends(get_session)):
-    supplier = await supplier_service.get_supplier(session, data.supplier_id)
-    if not supplier:
-        raise HTTPException(status_code=400, detail="Supplier not found")
     return await issue_service.create_issue_report(
-        session, supplier_id=data.supplier_id, product_name=data.product_name,
+        session, supplier_name=data.supplier_name, product_name=data.product_name,
         sku=data.sku, arrival_date=data.arrival_date,
         problem_description=data.problem_description,
         order_number=data.order_number,
@@ -28,14 +25,14 @@ async def create_issue(data: IssueReportCreate, session: AsyncSession = Depends(
 
 @router.get("/", response_model=list[IssueReportResponse])
 async def list_issues(
-    supplier_id: Optional[int] = None,
+    supplier_name: Optional[str] = None,
     status: Optional[str] = None,
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
     session: AsyncSession = Depends(get_session),
 ):
     return await issue_service.list_issue_reports(
-        session, supplier_id=supplier_id, status=status, skip=skip, limit=limit,
+        session, supplier_name=supplier_name, status=status, skip=skip, limit=limit,
     )
 
 
