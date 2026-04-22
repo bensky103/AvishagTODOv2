@@ -1,9 +1,10 @@
-"""APScheduler wiring — starts/stops the daily reminder cron job."""
+"""APScheduler wiring — starts/stops the daily reminder and weekly backup cron jobs."""
 
 import structlog
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
+from app.services import backup_service
 from app.services.reminder_service import send_daily_reminder
 
 logger = structlog.get_logger("scheduler")
@@ -12,17 +13,27 @@ _scheduler: AsyncIOScheduler | None = None
 
 
 def start_scheduler(bot_app, session_factory) -> None:
-    """Create and start the AsyncIOScheduler with the daily reminder job."""
+    """Create and start the AsyncIOScheduler with the daily reminder and weekly backup jobs."""
     global _scheduler
 
     async def send_daily_reminder_wrapped():
         await send_daily_reminder(bot_app, session_factory)
+
+    async def run_weekly_backup_wrapped():
+        async with session_factory() as session:
+            await backup_service.run_weekly_backup(session)
 
     _scheduler = AsyncIOScheduler()
     _scheduler.add_job(
         send_daily_reminder_wrapped,
         CronTrigger(hour=9, minute=0, timezone="Asia/Jerusalem"),
         id="daily_task_reminder",
+        replace_existing=True,
+    )
+    _scheduler.add_job(
+        run_weekly_backup_wrapped,
+        CronTrigger(day_of_week="fri", hour=0, minute=0, timezone="Asia/Jerusalem"),
+        id="weekly_db_backup",
         replace_existing=True,
     )
     _scheduler.start()

@@ -9,6 +9,9 @@ sed "s/\${NGINX_PORT}/$NGINX_PORT/g" /etc/nginx/nginx-site.conf.template > /etc/
 
 cd /app/backend
 
+# Pre-migration safety backup (no-op when DB already at head)
+python -m app.scripts.pre_migration_backup
+
 # Run database migrations
 alembic upgrade head
 
