@@ -9,15 +9,8 @@
   - Update a task (title, urgency, due date)
   - Delete a task (should ask for confirmation)
 
-  Suppliers:
-  - Create a supplier
-  - List all suppliers
-  - Update a supplier's contact info
-  - Delete a supplier with no issues
-  - Try deleting a supplier that has open issues (should block)
-
   Issues:
-  - Create an issue (check it asks for product name if missing)
+  - Create an issue (check it asks for supplier name and product name if missing)
   - List all issues
   - List issues filtered by supplier name
   - List action items for a specific issue
@@ -27,7 +20,7 @@
   - Reopen a resolved issue
 
   Edge cases:
-  - Fuzzy name matching — use partial/misspelled names
+  - Fuzzy name matching — use partial/misspelled task/issue names (supplier names are substring match, not fuzzy)
   - Send a message with multiple requests in one sentence
   - Send something completely off-topic (should stay in scope)
   - Check conversation memory — refer to something from earlier in the chat
