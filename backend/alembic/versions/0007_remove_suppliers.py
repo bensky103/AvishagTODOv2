@@ -35,7 +35,7 @@ def upgrade() -> None:
         UPDATE issue_reports
         SET supplier_name = COALESCE(
             (SELECT s.name FROM suppliers s WHERE s.id = issue_reports.supplier_id),
-            'Unknown supplier'
+            'לא ידוע'
         )
         """
     )
