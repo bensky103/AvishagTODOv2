@@ -1,16 +1,10 @@
 import pytest
 
 
-@pytest.fixture
-async def supplier_id(client):
-    res = await client.post("/api/suppliers", json={"name": "Test Supplier"})
-    return res.json()["id"]
-
-
 @pytest.mark.asyncio
-async def test_create_issue(client, supplier_id):
+async def test_create_issue(client):
     res = await client.post("/api/issues", json={
-        "supplier_id": supplier_id,
+        "supplier_name": "Test Supplier",
         "product_name": "Widget A",
         "arrival_date": "2026-04-01",
         "problem_description": "Arrived damaged",
@@ -21,9 +15,9 @@ async def test_create_issue(client, supplier_id):
 
 
 @pytest.mark.asyncio
-async def test_resolve_and_reopen_issue(client, supplier_id):
+async def test_resolve_and_reopen_issue(client):
     create = await client.post("/api/issues", json={
-        "supplier_id": supplier_id,
+        "supplier_name": "Test Supplier",
         "product_name": "Widget",
         "arrival_date": "2026-04-01",
         "problem_description": "Problem",
@@ -38,9 +32,9 @@ async def test_resolve_and_reopen_issue(client, supplier_id):
 
 
 @pytest.mark.asyncio
-async def test_add_action_item(client, supplier_id):
+async def test_add_action_item(client):
     issue = await client.post("/api/issues", json={
-        "supplier_id": supplier_id,
+        "supplier_name": "Test Supplier",
         "product_name": "Widget",
         "arrival_date": "2026-04-01",
         "problem_description": "Problem",
@@ -55,9 +49,9 @@ async def test_add_action_item(client, supplier_id):
 
 
 @pytest.mark.asyncio
-async def test_action_item_with_linked_task(client, supplier_id):
+async def test_action_item_with_linked_task(client):
     issue = await client.post("/api/issues", json={
-        "supplier_id": supplier_id,
+        "supplier_name": "Test Supplier",
         "product_name": "Widget",
         "arrival_date": "2026-04-01",
         "problem_description": "Problem",
@@ -73,9 +67,9 @@ async def test_action_item_with_linked_task(client, supplier_id):
 
 
 @pytest.mark.asyncio
-async def test_complete_action_item(client, supplier_id):
+async def test_complete_action_item(client):
     issue = await client.post("/api/issues", json={
-        "supplier_id": supplier_id,
+        "supplier_name": "Test Supplier",
         "product_name": "Widget",
         "arrival_date": "2026-04-01",
         "problem_description": "Problem",
@@ -93,9 +87,9 @@ async def test_complete_action_item(client, supplier_id):
 
 
 @pytest.mark.asyncio
-async def test_delete_issue(client, supplier_id):
+async def test_delete_issue(client):
     issue = await client.post("/api/issues", json={
-        "supplier_id": supplier_id,
+        "supplier_name": "Test Supplier",
         "product_name": "Widget",
         "arrival_date": "2026-04-01",
         "problem_description": "Problem",
@@ -110,10 +104,10 @@ async def test_delete_issue(client, supplier_id):
 
 
 @pytest.mark.asyncio
-async def test_delete_issue_cascades_action_items(client, supplier_id):
+async def test_delete_issue_cascades_action_items(client):
     """Deleting an issue should delete its action items."""
     issue = await client.post("/api/issues", json={
-        "supplier_id": supplier_id,
+        "supplier_name": "Test Supplier",
         "product_name": "Widget",
         "arrival_date": "2026-04-01",
         "problem_description": "Problem",

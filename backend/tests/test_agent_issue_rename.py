@@ -4,20 +4,10 @@ from datetime import date
 
 from app.agent.tools import get_agent_tools
 from app.models.issue_report import IssueReport
-from app.models.supplier import Supplier
 from app.services import issue_service
 
 
 TODAY = date.today()
-
-
-@pytest.fixture
-async def supplier(session):
-    s = Supplier(name="Test Supplier")
-    session.add(s)
-    await session.commit()
-    await session.refresh(s)
-    return s
 
 
 # ---------------------------------------------------------------------------
@@ -25,7 +15,7 @@ async def supplier(session):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_create_issue_via_old_term_tiklah(session, supplier):
+async def test_create_issue_via_old_term_tiklah(session):
     """create_issue_report tool still works when called with old-term context."""
     tools = get_agent_tools(session)
     create_tool = next(t for t in tools if t.name == "create_issue_report")
@@ -33,7 +23,7 @@ async def test_create_issue_via_old_term_tiklah(session, supplier):
     # The tool itself does not parse Hebrew text, but it should succeed
     # when invoked with valid args (the prompt layer handles synonym tolerance).
     result = await create_tool.ainvoke({
-        "supplier_name": supplier.name,
+        "supplier_name": "Test Supplier",
         "product_name": "Widget A",
         "problem_description": "תקלה בטיב המוצר",  # uses old term in description
         "arrival_date": TODAY.isoformat(),
@@ -42,13 +32,13 @@ async def test_create_issue_via_old_term_tiklah(session, supplier):
 
 
 @pytest.mark.asyncio
-async def test_create_issue_via_new_term_baya(session, supplier):
+async def test_create_issue_via_new_term_baya(session):
     """create_issue_report tool works normally (new Hebrew term in description)."""
     tools = get_agent_tools(session)
     create_tool = next(t for t in tools if t.name == "create_issue_report")
 
     result = await create_tool.ainvoke({
-        "supplier_name": supplier.name,
+        "supplier_name": "Test Supplier",
         "product_name": "Widget B",
         "problem_description": "בעיית איכות בחומרים",
         "arrival_date": TODAY.isoformat(),
@@ -61,13 +51,13 @@ async def test_create_issue_via_new_term_baya(session, supplier):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_create_issue_with_order_number_via_tool(session, supplier):
+async def test_create_issue_with_order_number_via_tool(session):
     """create_issue_report tool passes order_number to the service layer."""
     tools = get_agent_tools(session)
     create_tool = next(t for t in tools if t.name == "create_issue_report")
 
     result = await create_tool.ainvoke({
-        "supplier_name": supplier.name,
+        "supplier_name": "Test Supplier",
         "product_name": "Widget C",
         "problem_description": "בעיה",
         "arrival_date": TODAY.isoformat(),
@@ -83,12 +73,12 @@ async def test_create_issue_with_order_number_via_tool(session, supplier):
 
 
 @pytest.mark.asyncio
-async def test_list_issues_tool_still_works(session, supplier):
+async def test_list_issues_tool_still_works(session):
     """list_issues tool still returns results after rename (no regression)."""
     # Seed an issue
     await issue_service.create_issue_report(
         session,
-        supplier_id=supplier.id,
+        supplier_name="Test Supplier",
         product_name="Widget D",
         arrival_date=TODAY,
         problem_description="Some problem",

@@ -2,30 +2,10 @@
 import pytest
 from datetime import date
 
-from app.models.supplier import Supplier
 from app.services import issue_service
 
 
 TODAY = date.today()
-
-
-@pytest.fixture
-async def supplier(session):
-    s = Supplier(name="Quality Supplier")
-    session.add(s)
-    await session.commit()
-    await session.refresh(s)
-    return s
-
-
-@pytest.fixture
-async def base_payload(supplier):
-    return {
-        "supplier_id": supplier.id,
-        "product_name": "Widget X",
-        "arrival_date": TODAY,
-        "problem_description": "Defective batch",
-    }
 
 
 # ---------------------------------------------------------------------------
@@ -33,10 +13,10 @@ async def base_payload(supplier):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_create_issue_with_all_quality_fields(session, supplier):
+async def test_create_issue_with_all_quality_fields(session):
     issue = await issue_service.create_issue_report(
         session,
-        supplier_id=supplier.id,
+        supplier_name="Test Supplier",
         product_name="Widget X",
         arrival_date=TODAY,
         problem_description="Defective batch",
@@ -54,10 +34,10 @@ async def test_create_issue_with_all_quality_fields(session, supplier):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_create_issue_without_quality_fields_defaults_null(session, supplier):
+async def test_create_issue_without_quality_fields_defaults_null(session):
     issue = await issue_service.create_issue_report(
         session,
-        supplier_id=supplier.id,
+        supplier_name="Test Supplier",
         product_name="Widget Y",
         arrival_date=TODAY,
         problem_description="Another problem",
@@ -73,10 +53,10 @@ async def test_create_issue_without_quality_fields_defaults_null(session, suppli
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_patch_order_number_only(session, supplier):
+async def test_patch_order_number_only(session):
     issue = await issue_service.create_issue_report(
         session,
-        supplier_id=supplier.id,
+        supplier_name="Test Supplier",
         product_name="Widget A",
         arrival_date=TODAY,
         problem_description="Problem A",
@@ -88,10 +68,10 @@ async def test_patch_order_number_only(session, supplier):
 
 
 @pytest.mark.asyncio
-async def test_patch_what_we_did_only(session, supplier):
+async def test_patch_what_we_did_only(session):
     issue = await issue_service.create_issue_report(
         session,
-        supplier_id=supplier.id,
+        supplier_name="Test Supplier",
         product_name="Widget B",
         arrival_date=TODAY,
         problem_description="Problem B",
@@ -103,10 +83,10 @@ async def test_patch_what_we_did_only(session, supplier):
 
 
 @pytest.mark.asyncio
-async def test_patch_compensation_only(session, supplier):
+async def test_patch_compensation_only(session):
     issue = await issue_service.create_issue_report(
         session,
-        supplier_id=supplier.id,
+        supplier_name="Test Supplier",
         product_name="Widget C",
         arrival_date=TODAY,
         problem_description="Problem C",
@@ -118,11 +98,11 @@ async def test_patch_compensation_only(session, supplier):
 
 
 @pytest.mark.asyncio
-async def test_patch_one_does_not_reset_others(session, supplier):
+async def test_patch_one_does_not_reset_others(session):
     """Patching one field doesn't reset the others."""
     issue = await issue_service.create_issue_report(
         session,
-        supplier_id=supplier.id,
+        supplier_name="Test Supplier",
         product_name="Widget D",
         arrival_date=TODAY,
         problem_description="Problem D",
@@ -141,11 +121,11 @@ async def test_patch_one_does_not_reset_others(session, supplier):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_patch_empty_string_stores_null(session, supplier):
+async def test_patch_empty_string_stores_null(session):
     """An empty string for a nullable text field should be stored as NULL."""
     issue = await issue_service.create_issue_report(
         session,
-        supplier_id=supplier.id,
+        supplier_name="Test Supplier",
         product_name="Widget E",
         arrival_date=TODAY,
         problem_description="Problem E",
