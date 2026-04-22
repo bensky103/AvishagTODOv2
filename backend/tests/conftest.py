@@ -1,3 +1,8 @@
+import os
+
+# Set test env BEFORE importing app modules so settings pick these up.
+os.environ.setdefault("RATE_LIMIT", "1000000/minute")
+
 import asyncio
 import pytest
 from httpx import AsyncClient, ASGITransport

@@ -4,7 +4,7 @@ import pytest
 @pytest.mark.asyncio
 async def test_create_task(client):
     """Should create a task and return it."""
-    res = await client.post("/api/tasks", json={
+    res = await client.post("/api/tasks/", json={
         "title": "Test task",
         "urgency": "high",
     })
@@ -18,9 +18,9 @@ async def test_create_task(client):
 @pytest.mark.asyncio
 async def test_list_tasks(client):
     """Should list created tasks."""
-    await client.post("/api/tasks", json={"title": "Task 1"})
-    await client.post("/api/tasks", json={"title": "Task 2"})
-    res = await client.get("/api/tasks")
+    await client.post("/api/tasks/", json={"title": "Task 1"})
+    await client.post("/api/tasks/", json={"title": "Task 2"})
+    res = await client.get("/api/tasks/")
     assert res.status_code == 200
     assert len(res.json()) == 2
 
@@ -28,7 +28,7 @@ async def test_list_tasks(client):
 @pytest.mark.asyncio
 async def test_get_task(client):
     """Should get a task by ID."""
-    create = await client.post("/api/tasks", json={"title": "My task"})
+    create = await client.post("/api/tasks/", json={"title": "My task"})
     task_id = create.json()["id"]
     res = await client.get(f"/api/tasks/{task_id}")
     assert res.status_code == 200
@@ -45,7 +45,7 @@ async def test_get_task_not_found(client):
 @pytest.mark.asyncio
 async def test_complete_and_reopen_task(client):
     """Should complete and reopen a task."""
-    create = await client.post("/api/tasks", json={"title": "Toggle task"})
+    create = await client.post("/api/tasks/", json={"title": "Toggle task"})
     task_id = create.json()["id"]
 
     # Complete
@@ -62,7 +62,7 @@ async def test_complete_and_reopen_task(client):
 @pytest.mark.asyncio
 async def test_update_task(client):
     """Should update task fields."""
-    create = await client.post("/api/tasks", json={"title": "Old title", "urgency": "low"})
+    create = await client.post("/api/tasks/", json={"title": "Old title", "urgency": "low"})
     task_id = create.json()["id"]
 
     res = await client.patch(f"/api/tasks/{task_id}", json={"title": "New title"})
@@ -74,7 +74,7 @@ async def test_update_task(client):
 @pytest.mark.asyncio
 async def test_update_task_clear_nullable_field(client):
     """Should be able to clear a nullable field by sending null."""
-    create = await client.post("/api/tasks", json={
+    create = await client.post("/api/tasks/", json={
         "title": "Task with date",
         "due_date": "2026-12-31",
     })
@@ -90,7 +90,7 @@ async def test_update_task_clear_nullable_field(client):
 @pytest.mark.asyncio
 async def test_delete_task(client):
     """Should delete a task."""
-    create = await client.post("/api/tasks", json={"title": "To delete"})
+    create = await client.post("/api/tasks/", json={"title": "To delete"})
     task_id = create.json()["id"]
 
     res = await client.delete(f"/api/tasks/{task_id}")
@@ -104,15 +104,15 @@ async def test_delete_task(client):
 @pytest.mark.asyncio
 async def test_filter_tasks_by_status(client):
     """Should filter tasks by status."""
-    await client.post("/api/tasks", json={"title": "Open task"})
-    create2 = await client.post("/api/tasks", json={"title": "Done task"})
+    await client.post("/api/tasks/", json={"title": "Open task"})
+    create2 = await client.post("/api/tasks/", json={"title": "Done task"})
     await client.post(f"/api/tasks/{create2.json()['id']}/complete")
 
-    open_tasks = await client.get("/api/tasks?status=open")
+    open_tasks = await client.get("/api/tasks/?status=open")
     assert len(open_tasks.json()) == 1
     assert open_tasks.json()[0]["title"] == "Open task"
 
-    completed_tasks = await client.get("/api/tasks?status=completed")
+    completed_tasks = await client.get("/api/tasks/?status=completed")
     assert len(completed_tasks.json()) == 1
     assert completed_tasks.json()[0]["title"] == "Done task"
 
@@ -121,9 +121,9 @@ async def test_filter_tasks_by_status(client):
 async def test_create_task_validation(client):
     """Should reject invalid task data."""
     # Empty title
-    res = await client.post("/api/tasks", json={"title": ""})
+    res = await client.post("/api/tasks/", json={"title": ""})
     assert res.status_code == 422
 
     # Invalid urgency
-    res = await client.post("/api/tasks", json={"title": "Ok", "urgency": "invalid"})
+    res = await client.post("/api/tasks/", json={"title": "Ok", "urgency": "invalid"})
     assert res.status_code == 422

@@ -3,7 +3,7 @@ import pytest
 
 @pytest.mark.asyncio
 async def test_create_issue(client):
-    res = await client.post("/api/issues", json={
+    res = await client.post("/api/issues/", json={
         "supplier_name": "Test Supplier",
         "product_name": "Widget A",
         "arrival_date": "2026-04-01",
@@ -16,7 +16,7 @@ async def test_create_issue(client):
 
 @pytest.mark.asyncio
 async def test_resolve_and_reopen_issue(client):
-    create = await client.post("/api/issues", json={
+    create = await client.post("/api/issues/", json={
         "supplier_name": "Test Supplier",
         "product_name": "Widget",
         "arrival_date": "2026-04-01",
@@ -33,7 +33,7 @@ async def test_resolve_and_reopen_issue(client):
 
 @pytest.mark.asyncio
 async def test_add_action_item(client):
-    issue = await client.post("/api/issues", json={
+    issue = await client.post("/api/issues/", json={
         "supplier_name": "Test Supplier",
         "product_name": "Widget",
         "arrival_date": "2026-04-01",
@@ -50,7 +50,7 @@ async def test_add_action_item(client):
 
 @pytest.mark.asyncio
 async def test_action_item_with_linked_task(client):
-    issue = await client.post("/api/issues", json={
+    issue = await client.post("/api/issues/", json={
         "supplier_name": "Test Supplier",
         "product_name": "Widget",
         "arrival_date": "2026-04-01",
@@ -68,7 +68,7 @@ async def test_action_item_with_linked_task(client):
 
 @pytest.mark.asyncio
 async def test_complete_action_item(client):
-    issue = await client.post("/api/issues", json={
+    issue = await client.post("/api/issues/", json={
         "supplier_name": "Test Supplier",
         "product_name": "Widget",
         "arrival_date": "2026-04-01",
@@ -88,7 +88,7 @@ async def test_complete_action_item(client):
 
 @pytest.mark.asyncio
 async def test_delete_issue(client):
-    issue = await client.post("/api/issues", json={
+    issue = await client.post("/api/issues/", json={
         "supplier_name": "Test Supplier",
         "product_name": "Widget",
         "arrival_date": "2026-04-01",
@@ -106,7 +106,7 @@ async def test_delete_issue(client):
 @pytest.mark.asyncio
 async def test_delete_issue_cascades_action_items(client):
     """Deleting an issue should delete its action items."""
-    issue = await client.post("/api/issues", json={
+    issue = await client.post("/api/issues/", json={
         "supplier_name": "Test Supplier",
         "product_name": "Widget",
         "arrival_date": "2026-04-01",
