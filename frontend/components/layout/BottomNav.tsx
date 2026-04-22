@@ -7,7 +7,6 @@ import { colors, tint } from "@/lib/theme";
 const tabs = [
   { href: "/", label: "דשבורד", icon: "📊" },
   { href: "/tasks", label: "משימות", icon: "✅" },
-  { href: "/suppliers", label: "ספקים", icon: "🏢" },
   { href: "/issues", label: "בעיות איכות", icon: "⚠️" },
 ] as const;
 

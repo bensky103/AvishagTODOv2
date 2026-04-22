@@ -10,7 +10,6 @@ import {
   useToggleActionItem,
   useDeleteIssue,
 } from "@/lib/queries/issues";
-import { useSupplier } from "@/lib/queries/suppliers";
 import { Modal } from "@/components/ui/Modal";
 import { Badge } from "@/components/ui/Badge";
 import { useToast } from "@/components/ui/Toast";
@@ -22,7 +21,6 @@ interface IssueDetailProps {
 
 export default function IssueDetail({ issueId, onClose }: IssueDetailProps) {
   const { data: issue, isLoading } = useIssue(issueId);
-  const { data: supplier } = useSupplier(issue?.supplier_id ?? 0);
   const resolveIssue = useResolveIssue();
   const reopenIssue = useReopenIssue();
   const addActionItem = useAddActionItem();
@@ -123,7 +121,7 @@ export default function IssueDetail({ issueId, onClose }: IssueDetailProps) {
               <div>
                 <p className="text-xs font-body text-text-secondary">ספק</p>
                 <p className="text-sm font-body text-text-primary">
-                  {supplier?.name || "טוען..."}
+                  {issue.supplier_name}
                 </p>
               </div>
               <div>

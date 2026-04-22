@@ -3,7 +3,6 @@
 import { useState, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useIssues } from "@/lib/queries/issues";
-import { useSuppliers } from "@/lib/queries/suppliers";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { FilterChips } from "@/components/ui/FilterChips";
 import { ViewToggle, type ViewMode } from "@/components/ui/ViewToggle";
@@ -38,11 +37,9 @@ function IssueStatusBadge({ status }: { status: string }) {
 
 function TableView({
   issues,
-  supplierMap,
   onSelectIssue,
 }: {
   issues: IssueReport[];
-  supplierMap: Record<number, string>;
   onSelectIssue: (id: number) => void;
 }) {
   const [sortKey, setSortKey] = useState<SortKey>("arrival_date");
@@ -65,8 +62,8 @@ function TableView({
       aVal = a.arrival_date;
       bVal = b.arrival_date;
     } else if (sortKey === "supplier") {
-      aVal = supplierMap[a.supplier_id] ?? null;
-      bVal = supplierMap[b.supplier_id] ?? null;
+      aVal = a.supplier_name;
+      bVal = b.supplier_name;
     } else if (sortKey === "order_number") {
       aVal = a.order_number;
       bVal = b.order_number;
@@ -150,7 +147,7 @@ function TableView({
                 {new Date(issue.arrival_date).toLocaleDateString("he-IL")}
               </td>
               <td className="px-3 py-2.5 text-xs font-body text-text-primary whitespace-nowrap">
-                {supplierMap[issue.supplier_id] || "—"}
+                {issue.supplier_name || "—"}
               </td>
               <td className="px-3 py-2.5 text-xs font-body text-text-primary whitespace-nowrap">
                 {issue.order_number || <span className="text-text-secondary">—</span>}
@@ -236,12 +233,6 @@ function IssuesPageContent() {
   const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null);
 
   const { data: issues, isLoading } = useIssues({ status: filter });
-  const { data: suppliers } = useSuppliers();
-
-  const supplierMap: Record<number, string> = {};
-  suppliers?.forEach((s) => {
-    supplierMap[s.id] = s.name;
-  });
 
   return (
     <div className="min-h-screen">
@@ -276,7 +267,6 @@ function IssuesPageContent() {
         ) : view === "table" ? (
           <TableView
             issues={issues ?? []}
-            supplierMap={supplierMap}
             onSelectIssue={setSelectedIssueId}
           />
         ) : (
@@ -297,7 +287,7 @@ function IssuesPageContent() {
                       {issue.product_name}
                     </p>
                     <p className="text-xs font-body text-text-secondary mt-1">
-                      {supplierMap[issue.supplier_id] || "ספק לא ידוע"} ·{" "}
+                      {issue.supplier_name} ·{" "}
                       {new Date(issue.arrival_date).toLocaleDateString("he-IL")}
                     </p>
                   </div>

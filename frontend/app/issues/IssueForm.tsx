@@ -3,10 +3,8 @@
 import { useState, useEffect } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { useCreateIssue, useAddActionItem } from "@/lib/queries/issues";
-import { useSuppliers } from "@/lib/queries/suppliers";
 import { useToast } from "@/components/ui/Toast";
 import { DatePicker } from "@/components/ui/DatePicker";
-import { Select } from "@/components/ui/Select";
 
 interface IssueFormProps {
   isOpen: boolean;
@@ -19,7 +17,7 @@ interface PendingAction {
 }
 
 export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
-  const [supplierId, setSupplierId] = useState("");
+  const [supplierName, setSupplierName] = useState("");
   const [productName, setProductName] = useState("");
   const [sku, setSku] = useState("");
   const [arrivalDate, setArrivalDate] = useState("");
@@ -31,14 +29,13 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
   const [newActionDesc, setNewActionDesc] = useState("");
   const [newActionCreateTask, setNewActionCreateTask] = useState(false);
 
-  const { data: suppliers } = useSuppliers();
   const createIssue = useCreateIssue();
   const addActionItem = useAddActionItem();
   const { toast } = useToast();
 
   useEffect(() => {
     if (!isOpen) {
-      setSupplierId("");
+      setSupplierName("");
       setProductName("");
       setSku("");
       setArrivalDate("");
@@ -66,7 +63,7 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (
-      !supplierId ||
+      !supplierName.trim() ||
       !productName.trim() ||
       !arrivalDate ||
       !problemDescription.trim()
@@ -75,7 +72,7 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
 
     createIssue.mutate(
       {
-        supplier_id: Number(supplierId),
+        supplier_name: supplierName.trim(),
         product_name: productName.trim(),
         sku: sku.trim() || undefined,
         arrival_date: arrivalDate,
@@ -112,7 +109,7 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
   };
 
   const isValid =
-    supplierId &&
+    supplierName.trim() &&
     productName.trim() &&
     arrivalDate &&
     problemDescription.trim();
@@ -125,11 +122,13 @@ export default function IssueForm({ isOpen, onClose }: IssueFormProps) {
           <label className="block text-sm font-body text-white mb-1">
             ספק *
           </label>
-          <Select
-            value={supplierId}
-            onChange={(val) => setSupplierId(val)}
-            options={suppliers?.map((s) => ({ value: String(s.id), label: s.name })) || []}
-            placeholder="בחר ספק"
+          <input
+            type="text"
+            value={supplierName}
+            onChange={(e) => setSupplierName(e.target.value)}
+            placeholder="שם הספק"
+            maxLength={255}
+            className="w-full bg-surface-raised border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm font-body text-text-primary placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-transparent"
           />
         </div>
 

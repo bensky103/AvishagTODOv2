@@ -2,9 +2,6 @@ import type {
   Task,
   TaskCreate,
   TaskUpdate,
-  Supplier,
-  SupplierCreate,
-  SupplierUpdate,
   IssueReport,
   IssueCreate,
   IssueUpdate,
@@ -53,16 +50,6 @@ export const tasks = {
   reopen: (id: number) =>
     request<Task>(`/tasks/${id}/reopen`, { method: "POST" }),
   delete: (id: number) => request<void>(`/tasks/${id}`, { method: "DELETE" }),
-};
-
-export const suppliers = {
-  list: () => request<Supplier[]>("/suppliers/"),
-  get: (id: number) => request<Supplier>(`/suppliers/${id}`),
-  create: (data: SupplierCreate) =>
-    request<Supplier>("/suppliers/", { method: "POST", body: JSON.stringify(data) }),
-  update: (id: number, data: SupplierUpdate) =>
-    request<Supplier>(`/suppliers/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
-  delete: (id: number) => request<void>(`/suppliers/${id}`, { method: "DELETE" }),
 };
 
 export const issues = {

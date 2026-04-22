@@ -17,14 +17,6 @@ export interface Task {
   completed_at: string | null;
 }
 
-export interface Supplier {
-  id: number;
-  name: string;
-  contact_info: string | null;
-  notes: string | null;
-  created_at: string;
-}
-
 export interface ActionItem {
   id: number;
   issue_report_id: number;
@@ -36,7 +28,7 @@ export interface ActionItem {
 
 export interface IssueReport {
   id: number;
-  supplier_id: number;
+  supplier_name: string;
   product_name: string;
   sku: string | null;
   arrival_date: string;
@@ -48,7 +40,6 @@ export interface IssueReport {
   created_at: string;
   resolved_at: string | null;
   action_items: ActionItem[];
-  supplier?: Supplier;
 }
 
 export interface TaskCreate {
@@ -71,20 +62,8 @@ export interface TaskUpdate {
   category?: TaskCategory;
 }
 
-export interface SupplierCreate {
-  name: string;
-  contact_info?: string;
-  notes?: string;
-}
-
-export interface SupplierUpdate {
-  name?: string;
-  contact_info?: string;
-  notes?: string;
-}
-
 export interface IssueCreate {
-  supplier_id: number;
+  supplier_name: string;
   product_name: string;
   sku?: string;
   arrival_date: string;
