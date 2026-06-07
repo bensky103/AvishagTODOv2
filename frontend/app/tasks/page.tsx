@@ -202,6 +202,7 @@ function TasksPageContent() {
       <TaskForm
         isOpen={showCreate && !editingTask}
         onClose={() => setShowCreate(false)}
+        defaultCategory={categoryFilter !== "all" ? categoryFilter : undefined}
       />
 
       {editingTask && (

@@ -26,16 +26,17 @@ interface TaskFormProps {
   isOpen: boolean;
   onClose: () => void;
   task?: Task;
+  defaultCategory?: TaskCategory;
 }
 
-export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
+export default function TaskForm({ isOpen, onClose, task, defaultCategory }: TaskFormProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [urgency, setUrgency] = useState<Urgency>("medium");
   const [reminderEnabled, setReminderEnabled] = useState(false);
   const [recurringMonthly, setRecurringMonthly] = useState(false);
-  const [category, setCategory] = useState<TaskCategory>("work");
+  const [category, setCategory] = useState<TaskCategory>(defaultCategory ?? "work");
 
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
@@ -59,9 +60,9 @@ export default function TaskForm({ isOpen, onClose, task }: TaskFormProps) {
       setUrgency("medium");
       setReminderEnabled(false);
       setRecurringMonthly(false);
-      setCategory("work");
+      setCategory(defaultCategory ?? "work");
     }
-  }, [task, isOpen]);
+  }, [task, isOpen, defaultCategory]);
 
   // Auto-disable reminder if due date is cleared
   useEffect(() => {
